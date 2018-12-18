@@ -6,5 +6,5 @@ package com.github.bpazy.zhuzhu;
 public interface WebCrawler {
     boolean shouldVisit(String url);
 
-    void visit(byte[] body);
+    void visit(byte[] content);
 }

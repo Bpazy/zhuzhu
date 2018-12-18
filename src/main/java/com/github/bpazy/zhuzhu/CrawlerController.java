@@ -1,18 +1,66 @@
 package com.github.bpazy.zhuzhu;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author ziyuan
  */
+@Slf4j
 public class CrawlerController {
+    private CloseableHttpClient client = HttpClients.createDefault();
     private List<String> seeds = Lists.newArrayList();
+    private Set<String> visited = Sets.newHashSet();
+    private RequestConfig requestConfig;
+
+    public CrawlerController() {
+        int timeout = 3000;
+        requestConfig = RequestConfig.custom()
+                .setConnectTimeout(timeout)
+                .setConnectionRequestTimeout(timeout)
+                .setSocketTimeout(timeout)
+                .build();
+    }
 
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
+        while (seeds.size() > 0) {
+            HttpGet httpGet = new HttpGet(Util.normalizeUrl(seeds.remove(0)));
+            httpGet.setConfig(requestConfig);
+            try (CloseableHttpResponse response = client.execute(httpGet)) {
+                byte[] contentBytes = null;
+                try {
+                    contentBytes = IOUtils.toByteArray(response.getEntity().getContent());
+                } catch (IOException e) {
+                    log.error("{}", e);
+                }
+                if (contentBytes == null) continue;
+
+                List<String> urls = Util.extractUrls(contentBytes, "UTF8");
+                urls.stream()
+                        .filter(visited::add)
+                        .filter(webCrawler::shouldVisit)
+                        .peek(u -> log.debug("shouldVisit {}", u))
+                        .forEach(this::addSeed);
+
+                webCrawler.visit(contentBytes);
+            } catch (IOException e) {
+                log.warn("can not read {}", httpGet.getURI());
+            }
+        }
+        log.info("Crawler stopped because of seeds is empty.");
     }
 
     public void addSeed(String url) {
