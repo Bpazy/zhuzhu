@@ -23,6 +23,7 @@ public class Util {
         return links.eachAttr("href");
     }
 
+    // TODO java.lang.IllegalArgumentException: Illegal character in authority at index 7: http://m.baidu.com			?uid%3D2FB5058F-9073-E7B9-0D0A-36C51C3D0883
     @SneakyThrows
     public static String normalizeUrl(String u) {
         URL url = new URL(u);
