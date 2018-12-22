@@ -15,6 +15,7 @@ import java.util.List;
 @UtilityClass
 public class Util {
 
+    // TODO absolute path, relative path
     @SneakyThrows
     public static List<String> extractUrls(byte[] contentBytes, String charset) {
         String content = IOUtils.toString(contentBytes, charset);
@@ -24,13 +25,18 @@ public class Util {
     }
 
     // TODO java.lang.IllegalArgumentException: Illegal character in authority at index 7: http://m.baidu.com			?uid%3D2FB5058F-9073-E7B9-0D0A-36C51C3D0883
+    // TODO record context
     @SneakyThrows
     public static String normalizeUrl(String u) {
         URL url = new URL(u);
-        String s = url.getProtocol() + "://" + url.getHost();
+        String s = url.getProtocol() + "://" + url.getHost() + url.getPath();
         if (StringUtils.isNotBlank(url.getQuery())) {
             return s + "?" + URLEncoder.encode(url.getQuery(), "UTF8");
         }
         return s;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(normalizeUrl("http://v.baidu.com/gameindex/"));
     }
 }

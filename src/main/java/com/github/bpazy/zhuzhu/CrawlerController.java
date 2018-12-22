@@ -37,7 +37,15 @@ public class CrawlerController {
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
         while (seeds.size() > 0) {
-            HttpGet httpGet = new HttpGet(Util.normalizeUrl(seeds.remove(0)));
+            String url;
+            String seed = seeds.remove(0);
+            try {
+                url = Util.normalizeUrl(seed);
+            } catch (IllegalArgumentException e) {
+                log.warn("can not read {}", seed);
+                continue;
+            }
+            HttpGet httpGet = new HttpGet(url);
             httpGet.setConfig(requestConfig);
             try (CloseableHttpResponse response = client.execute(httpGet)) {
                 byte[] contentBytes = null;
@@ -50,12 +58,13 @@ public class CrawlerController {
 
                 List<String> urls = Util.extractUrls(contentBytes, "UTF8");
                 urls.stream()
+                        .map(String::trim)
                         .filter(visited::add)
                         .filter(webCrawler::shouldVisit)
                         .peek(u -> log.debug("shouldVisit {}", u))
                         .forEach(this::addSeed);
 
-                webCrawler.visit(contentBytes);
+                webCrawler.visit(url, contentBytes);
             } catch (IOException e) {
                 log.warn("can not read {}", httpGet.getURI());
             }

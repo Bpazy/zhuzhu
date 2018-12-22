@@ -27,9 +27,9 @@ public class MainTest {
 
         @Override
         @SneakyThrows
-        public void visit(byte[] content) {
+        public void visit(String url, byte[] content) {
             Document doc = Jsoup.parse(new String(content));
-            log.info("visit title: {}", doc.title());
+            log.info("visit {}: {}", doc.title(), url);
         }
     }
 }
