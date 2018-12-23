@@ -1,5 +1,6 @@
 package com.github.bpazy.zhuzhu;
 
+import com.github.bpazy.zhuzhu.url.ZUrl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
@@ -37,15 +38,15 @@ public class CrawlerController {
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
         while (seeds.size() > 0) {
-            String url;
+            ZUrl zUrl;
             String seed = seeds.remove(0);
             try {
-                url = Util.normalizeUrl(seed);
+                zUrl = ZUrl.normalize(seed);
             } catch (IllegalArgumentException e) {
                 log.warn("can not read {}", seed);
                 continue;
             }
-            HttpGet httpGet = new HttpGet(url);
+            HttpGet httpGet = new HttpGet(zUrl.getUrl());
             httpGet.setConfig(requestConfig);
             try (CloseableHttpResponse response = client.execute(httpGet)) {
                 byte[] contentBytes = null;
@@ -56,7 +57,7 @@ public class CrawlerController {
                 }
                 if (contentBytes == null) continue;
 
-                List<String> urls = Util.extractUrls(contentBytes, "UTF8");
+                List<String> urls = Util.extractUrls(zUrl.getDomain(), contentBytes, "UTF8");
                 urls.stream()
                         .map(String::trim)
                         .filter(visited::add)
@@ -64,7 +65,7 @@ public class CrawlerController {
                         .peek(u -> log.debug("shouldVisit {}", u))
                         .forEach(this::addSeed);
 
-                webCrawler.visit(url, contentBytes);
+                webCrawler.visit(zUrl.getUrl(), contentBytes);
             } catch (IOException e) {
                 log.warn("can not read {}", httpGet.getURI());
             }
