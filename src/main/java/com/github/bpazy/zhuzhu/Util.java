@@ -38,6 +38,7 @@ public class Util {
         Elements links = doc.select("a[href]");
         return links.eachAttr("href").stream()
                 .filter(u -> !u.startsWith("javascript:"))
+                .filter(u -> !u.startsWith("#"))
                 .map(u -> {
                     if (u.startsWith("http")) return u;
                     if (u.startsWith("/")) return absoluteDomain + u;

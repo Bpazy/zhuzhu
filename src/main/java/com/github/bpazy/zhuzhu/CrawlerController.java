@@ -3,6 +3,7 @@ package com.github.bpazy.zhuzhu;
 import com.github.bpazy.zhuzhu.url.ZUrl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -15,15 +16,20 @@ import org.apache.http.impl.client.HttpClients;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author ziyuan
  */
 @Slf4j
 public class CrawlerController {
+    @Setter
+    private int threadNum;
     private CloseableHttpClient client = HttpClients.createDefault();
-    private List<String> seeds = Lists.newArrayList();
-    private Set<String> visited = Sets.newHashSet();
+    private List<String> seeds = Lists.newArrayList(); // TODO thread safe
+    private Set<String> visited = Sets.newHashSet();   // TODO thread safe
     private RequestConfig requestConfig;
 
     public CrawlerController() {
@@ -36,39 +42,50 @@ public class CrawlerController {
     }
 
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
+        ExecutorService executor = Executors.newCachedThreadPool();
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
-        while (seeds.size() > 0) {
-            ZUrl zUrl;
-            String seed = seeds.remove(0);
-            try {
-                zUrl = ZUrl.normalize(seed);
-            } catch (IllegalArgumentException e) {
-                log.warn("can not read {}", seed);
-                continue;
-            }
-            HttpGet httpGet = new HttpGet(zUrl.getUrl());
-            httpGet.setConfig(requestConfig);
-            try (CloseableHttpResponse response = client.execute(httpGet)) {
-                byte[] contentBytes = null;
-                try {
-                    contentBytes = IOUtils.toByteArray(response.getEntity().getContent());
-                } catch (IOException e) {
-                    log.error("{}", e);
+        for (int i = 0; i < threadNum; i++) {
+            executor.execute(() -> {
+                while (seeds.size() > 0) {
+                    ZUrl zUrl;
+                    String seed = seeds.remove(0);
+                    try {
+                        zUrl = ZUrl.normalize(seed);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("can not read {}", seed);
+                        continue;
+                    }
+                    HttpGet httpGet = new HttpGet(zUrl.getUrl());
+                    httpGet.setConfig(requestConfig);
+                    try (CloseableHttpResponse response = client.execute(httpGet)) {
+                        byte[] contentBytes = null;
+                        try {
+                            contentBytes = IOUtils.toByteArray(response.getEntity().getContent());
+                        } catch (IOException e) {
+                            log.error("{}", e);
+                        }
+                        if (contentBytes == null) continue;
+
+                        List<String> urls = Util.extractUrls(zUrl.getUrl(), contentBytes, "UTF8");
+                        urls.stream()
+                                .map(String::trim)
+                                .filter(visited::add)
+                                .filter(webCrawler::shouldVisit)
+                                .peek(u -> log.debug("shouldVisit {}", u))
+                                .forEach(this::addSeed);
+
+                        webCrawler.visit(zUrl.getUrl(), contentBytes);
+                    } catch (IOException e) {
+                        log.warn("can not read {}", httpGet.getURI());
+                    }
                 }
-                if (contentBytes == null) continue;
-
-                List<String> urls = Util.extractUrls(zUrl.getUrl(), contentBytes, "UTF8");
-                urls.stream()
-                        .map(String::trim)
-                        .filter(visited::add)
-                        .filter(webCrawler::shouldVisit)
-                        .peek(u -> log.debug("shouldVisit {}", u))
-                        .forEach(this::addSeed);
-
-                webCrawler.visit(zUrl.getUrl(), contentBytes);
-            } catch (IOException e) {
-                log.warn("can not read {}", httpGet.getURI());
-            }
+            });
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.error("{}", e);
         }
         log.info("Crawler stopped because of seeds is empty.");
     }
