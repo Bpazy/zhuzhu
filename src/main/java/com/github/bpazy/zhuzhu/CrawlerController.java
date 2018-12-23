@@ -57,7 +57,7 @@ public class CrawlerController {
                 }
                 if (contentBytes == null) continue;
 
-                List<String> urls = Util.extractUrls(zUrl.getDomain(), contentBytes, "UTF8");
+                List<String> urls = Util.extractUrls(zUrl.getUrl(), contentBytes, "UTF8");
                 urls.stream()
                         .map(String::trim)
                         .filter(visited::add)

@@ -19,9 +19,13 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class Util {
 
-    public static List<String> extractUrls(String baseDomain, byte[] contentBytes, String charset) {
-        if (StringUtils.isAnyBlank(baseDomain, charset)) return Collections.emptyList();
-        String domain = baseDomain.endsWith("/") ? StringUtils.removeEnd(baseDomain, "/") : baseDomain;
+    public static List<String> extractUrls(String fullUrl, byte[] contentBytes, String charset) {
+        if (StringUtils.isAnyBlank(fullUrl, charset)) return Collections.emptyList();
+        fullUrl = fullUrl.endsWith("/") ? StringUtils.removeEnd(fullUrl, "/") : fullUrl;
+        String relativeDomain = StringUtils.substringBeforeLast(fullUrl, "/");
+
+        String domain = getDomain(fullUrl);
+        String absoluteDomain = domain.endsWith("/") ? StringUtils.removeEnd(domain, "?") : domain;
 
         String content;
         try {
@@ -36,8 +40,8 @@ public class Util {
                 .filter(u -> !u.startsWith("javascript:"))
                 .map(u -> {
                     if (u.startsWith("http")) return u;
-                    if (u.startsWith("/")) return domain + u;
-                    return domain + "/" + u;
+                    if (u.startsWith("/")) return absoluteDomain + u;
+                    return relativeDomain + "/" + u;
                 })
                 .collect(Collectors.toList());
     }
@@ -46,7 +50,7 @@ public class Util {
     @SneakyThrows
     public static String getDomain(String fullUrl) {
         URL url = new URL(fullUrl);
-        return url.getProtocol() + "://" + url.getHost() + url.getPath();
+        return url.getProtocol() + "://" + url.getHost();
     }
 
     @SneakyThrows
@@ -55,7 +59,6 @@ public class Util {
         String s = url.getProtocol() + "://" + url.getHost() + url.getPath();
         if (StringUtils.isNotBlank(url.getQuery())) {
             s = s + "?" + url.getQuery()
-                    .replaceAll("%", "%25")
                     .replaceAll("\\s", "%20")
                     .replaceAll("/", "%2F")
                     .replaceAll("\\+", "%2B")
