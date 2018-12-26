@@ -1,5 +1,7 @@
 package com.github.bpazy.zhuzhu;
 
+import com.github.bpazy.zhuzhu.schdule.Schedule;
+import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import com.github.bpazy.zhuzhu.url.ZUrl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -26,10 +28,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class CrawlerController {
     @Setter
-    private int threadNum;
+    private int threadNum = 1;
+    @Setter
+    private Schedule schedule;
+
     private CloseableHttpClient client = HttpClients.createDefault();
-    private List<String> seeds = Lists.newArrayList(); // TODO thread safe
-    private Set<String> visited = Sets.newHashSet();   // TODO thread safe
     private RequestConfig requestConfig;
 
     public CrawlerController() {
@@ -42,13 +45,15 @@ public class CrawlerController {
     }
 
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
+        ensureSchedule();
+
         ExecutorService executor = Executors.newCachedThreadPool();
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
         for (int i = 0; i < threadNum; i++) {
             executor.execute(() -> {
-                while (seeds.size() > 0) {
+                while (schedule.hasMore()) {
                     ZUrl zUrl;
-                    String seed = seeds.remove(0);
+                    String seed = schedule.take();
                     try {
                         zUrl = ZUrl.normalize(seed);
                     } catch (IllegalArgumentException e) {
@@ -69,10 +74,12 @@ public class CrawlerController {
                         List<String> urls = Util.extractUrls(zUrl.getUrl(), contentBytes, "UTF8");
                         urls.stream()
                                 .map(String::trim)
-                                .filter(visited::add)
+                                .peek(u -> log.debug("willVisited {}", u))
+                                .filter(schedule::unVisited)
+                                .peek(u -> log.debug("unVisited {}", u))
                                 .filter(webCrawler::shouldVisit)
                                 .peek(u -> log.debug("shouldVisit {}", u))
-                                .forEach(this::addSeed);
+                                .forEach(schedule::add);
 
                         webCrawler.visit(zUrl.getUrl(), contentBytes);
                     } catch (IOException e) {
@@ -90,8 +97,16 @@ public class CrawlerController {
         log.info("Crawler stopped because of seeds is empty.");
     }
 
+    private void ensureSchedule() {
+        if (this.schedule == null) {
+            schedule = new UniqueSchedule();
+        }
+    }
+
     public void addSeed(String url) {
-        seeds.add(url);
+        ensureSchedule();
+
+        schedule.add(url);
     }
 
     public interface WebCrawlerFactory<T> {

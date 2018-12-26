@@ -65,6 +65,7 @@ public class Util {
                     .replaceAll("\\+", "%2B")
                     .replaceAll("\\?", "%3F")
                     .replaceAll("#", "%23");
+            // TODO Exception in thread "pool-1-thread-1" java.lang.IllegalArgumentException: Illegal character in query at index 59: https://sv.baidu.com/videoui/page/videoland?pd=bjh&context={%22nid%22:%2214291184864727607922%22,%22sourceFrom%22:%22bjh%22}&fr=bjhauthor&type=video
         }
         if (StringUtils.isNoneEmpty(url.getRef())) {
             s = s + "#" + url.getRef();
