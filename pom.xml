@@ -5,10 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.bpazy</groupId>
-    <artifactId>zhuzhu</artifactId>
+    <artifactId>zhuzhu-build</artifactId>
     <packaging>pom</packaging>
     <version>${reversion}</version>
     <modules>
+        <module>zhuzhu-project</module>
         <module>zhuzhu-samples</module>
     </modules>
 

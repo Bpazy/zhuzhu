@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.bpazy</groupId>
-        <artifactId>zhuzhu</artifactId>
+        <artifactId>zhuzhu-build</artifactId>
         <version>${reversion}</version>
     </parent>
 
@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>com.github.bpazy</groupId>
-            <artifactId>zhuzhu-project</artifactId>
+            <artifactId>zhuzhu</artifactId>
             <version>${reversion}</version>
         </dependency>
         <dependency>

@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.bpazy</groupId>
-        <artifactId>zhuzhu</artifactId>
+        <artifactId>zhuzhu-build</artifactId>
         <version>${reversion}</version>
         <relativePath>../</relativePath>
     </parent>
 
-    <artifactId>zhuzhu-project</artifactId>
+    <artifactId>zhuzhu</artifactId>
     <name>Zhuzhu Project</name>
 
     <dependencies>
