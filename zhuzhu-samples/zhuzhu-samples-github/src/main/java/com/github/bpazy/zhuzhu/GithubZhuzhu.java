@@ -2,6 +2,7 @@ package com.github.bpazy.zhuzhu;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpHost;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -13,6 +14,7 @@ public class GithubZhuzhu {
     public static void main(String[] args) {
         CrawlerController controller = new CrawlerController();
         controller.addSeed("https://github.com/Bpazy");
+        controller.setProxy(new HttpHost("127.0.0.1", 8889));
         controller.start(MyWebCrawler.class);
     }
 

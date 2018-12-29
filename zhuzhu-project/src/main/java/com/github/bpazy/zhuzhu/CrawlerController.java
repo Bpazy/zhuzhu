@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -28,21 +29,20 @@ public class CrawlerController {
     private int threadNum = 1;
     @Setter
     private Schedule schedule;
+    @Setter
+    private HttpHost proxy;
 
-    private CloseableHttpClient client = HttpClients.createDefault(); // TODO: 2018/12/29 proxy
+    private static final int timeout = 3000;
+
+    private CloseableHttpClient client = HttpClients.createDefault();
     private RequestConfig requestConfig;
 
     public CrawlerController() {
-        int timeout = 3000;
-        requestConfig = RequestConfig.custom()
-                .setConnectTimeout(timeout)
-                .setConnectionRequestTimeout(timeout)
-                .setSocketTimeout(timeout)
-                .build();
     }
 
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         ensureSchedule();
+        ensureRequestConfig();
 
         ExecutorService executor = Executors.newCachedThreadPool();
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
@@ -92,6 +92,17 @@ public class CrawlerController {
             log.error("{}", e);
         }
         log.info("Crawler stopped because of seeds is empty.");
+    }
+
+    private void ensureRequestConfig() {
+        RequestConfig.Builder builder = RequestConfig.custom()
+                .setConnectTimeout(timeout)
+                .setConnectionRequestTimeout(timeout)
+                .setSocketTimeout(timeout);
+        if (proxy != null) {
+            builder.setProxy(proxy);
+        }
+        requestConfig = builder.build();
     }
 
     private void ensureSchedule() {
