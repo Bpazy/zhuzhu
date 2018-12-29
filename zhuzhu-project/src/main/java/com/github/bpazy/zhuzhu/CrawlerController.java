@@ -2,7 +2,6 @@ package com.github.bpazy.zhuzhu;
 
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
-import com.github.bpazy.zhuzhu.url.ZUrl;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -50,15 +49,8 @@ public class CrawlerController {
         for (int i = 0; i < threadNum; i++) {
             executor.execute(() -> {
                 while (schedule.hasMore()) {
-                    ZUrl zUrl;
-                    String seed = schedule.take();
-                    try {
-                        zUrl = ZUrl.normalize(seed);
-                    } catch (IllegalArgumentException e) {
-                        log.warn("can not read {}", seed);
-                        continue;
-                    }
-                    HttpGet httpGet = new HttpGet(zUrl.getUrl());
+                    String url = schedule.take();
+                    HttpGet httpGet = new HttpGet(url);
                     httpGet.setConfig(requestConfig);
                     try (CloseableHttpResponse response = client.execute(httpGet)) {
                         byte[] contentBytes = null;
@@ -78,7 +70,7 @@ public class CrawlerController {
                                 .peek(u -> log.debug("shouldVisit {}", u))
                                 .forEach(schedule::add);
 
-                        webCrawler.visit(zUrl.getUrl(), contentBytes);
+                        webCrawler.visit(url, contentBytes);
                     } catch (IOException e) {
                         log.warn("can not read {}", httpGet.getURI());
                     }
