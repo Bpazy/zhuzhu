@@ -9,9 +9,5 @@
         <version>${reversion}</version>
     </parent>
 
-    <artifactId>zhuzhu-samples-github</artifactId>
-
-    <dependencies>
-
-    </dependencies>
+    <artifactId>zhuzhu-samples-baidu</artifactId>
 </project>

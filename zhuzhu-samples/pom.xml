@@ -14,7 +14,7 @@
     <name>Zhuzhu Samples</name>
 
     <modules>
-        <module>zhuzhu-samples-github</module>
+        <module>zhuzhu-samples-baidu</module>
     </modules>
 
     <dependencies>

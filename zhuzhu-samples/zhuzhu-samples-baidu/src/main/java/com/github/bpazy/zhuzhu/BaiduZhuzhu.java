@@ -8,7 +8,7 @@ import org.jsoup.nodes.Document;
 /**
  * @author ziyuan
  */
-public class GithubZhuzhu {
+public class BaiduZhuzhu {
 
     public static void main(String[] args) {
         CrawlerController controller = new CrawlerController();
