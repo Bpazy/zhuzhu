@@ -4,11 +4,17 @@ package com.github.bpazy.zhuzhu.schdule;
  * @author ziyuan
  */
 public interface Schedule {
-    boolean hasMore();
-
+    /**
+     * get a url from schedule
+     *
+     * @return url
+     */
     String take();
 
-    boolean unVisited(String url);
-
+    /**
+     * add a url to schedule
+     *
+     * @param url the url you want add to schedule
+     */
     void add(String url);
 }

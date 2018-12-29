@@ -5,31 +5,38 @@ import com.google.common.collect.Sets;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author ziyuan
  */
 public class UniqueSchedule implements Schedule {
-    private List<String> seeds = Lists.newArrayList(); // TODO thread safe
-    private Set<String> visited = Sets.newHashSet();   // TODO thread safe
+    private Lock lock = new ReentrantLock();
 
-    @Override
-    public boolean hasMore() {
-        return seeds.size() > 0;
-    }
+    private List<String> seeds = Lists.newArrayList();
+    private Set<String> visited = Sets.newHashSet();
 
     @Override
     public String take() {
-        return seeds.remove(0);
-    }
+        try {
+            lock.lock();
 
-    @Override
-    public boolean unVisited(String url) {
-        return visited.add(url);
+            return seeds.remove(0);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void add(String url) {
-        seeds.add(url);
+        try {
+            lock.lock();
+
+            visited.add(url);
+            seeds.add(url);
+        } finally {
+            lock.unlock();
+        }
     }
 }

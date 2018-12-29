@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -48,8 +49,12 @@ public class CrawlerController {
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
         for (int i = 0; i < threadNum; i++) {
             executor.execute(() -> {
-                while (schedule.hasMore()) {
+                // TODO java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
+                //  because consume faster than produce
+                while (true) {
                     String url = schedule.take();
+                    if (StringUtils.isBlank(url)) return;
+
                     HttpGet httpGet = new HttpGet(url);
                     httpGet.setConfig(requestConfig);
                     try (CloseableHttpResponse response = client.execute(httpGet)) {
@@ -64,10 +69,8 @@ public class CrawlerController {
                         List<String> urls = Util.extractUrls(contentBytes, "UTF8");
                         urls.stream()
                                 .map(String::trim)
-                                .filter(schedule::unVisited)
-                                .peek(u -> log.debug("unVisited {}", u))
                                 .filter(webCrawler::shouldVisit)
-                                .peek(u -> log.debug("shouldVisit {}", u))
+                                .peek(u -> log.debug("will visit {}", u))
                                 .forEach(schedule::add);
 
                         webCrawler.visit(url, contentBytes);

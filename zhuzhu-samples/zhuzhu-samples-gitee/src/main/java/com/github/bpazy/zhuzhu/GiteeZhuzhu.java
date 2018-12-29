@@ -2,6 +2,7 @@ package com.github.bpazy.zhuzhu;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,6 +21,7 @@ public class GiteeZhuzhu {
     public static void main(String[] args) {
         CrawlerController controller = new CrawlerController();
         controller.addSeed("https://gitee.com/lemur/easypoi");
+        controller.setThreadNum(10);
         controller.start(MyWebCrawler.class);
     }
 
@@ -43,7 +45,7 @@ public class GiteeZhuzhu {
             Element starElement = doc.selectFirst(".star-container > a.ui.button.action-social-count");
             if (titleElement == null || starElement == null) return;
 
-            log.info("repo: {}, star number: {}, url: {}", titleElement.text(), starElement.text(), url);
+            log.info("repo: {}, star number: {}, url: {}", titleElement.text(), starElement.attr("title"), url);
         }
     }
 }

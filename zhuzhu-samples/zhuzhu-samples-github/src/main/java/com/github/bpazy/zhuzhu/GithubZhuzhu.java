@@ -21,6 +21,7 @@ public class GithubZhuzhu {
         CrawlerController controller = new CrawlerController();
         controller.addSeed("https://github.com/Bpazy/zhuzhu");
         controller.setProxy(new HttpHost("127.0.0.1", 8889));
+        controller.setThreadNum(10);
         controller.start(MyWebCrawler.class);
     }
 
