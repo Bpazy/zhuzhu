@@ -29,7 +29,7 @@ public class CrawlerController {
     @Setter
     private Schedule schedule;
 
-    private CloseableHttpClient client = HttpClients.createDefault();
+    private CloseableHttpClient client = HttpClients.createDefault(); // TODO: 2018/12/29 proxy
     private RequestConfig requestConfig;
 
     public CrawlerController() {
