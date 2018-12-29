@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.bpazy</groupId>
+        <artifactId>zhuzhu</artifactId>
+        <version>${reversion}</version>
+    </parent>
+
+    <artifactId>zhuzhu-samples</artifactId>
+    <packaging>pom</packaging>
+    <name>Zhuzhu Samples</name>
+
+    <modules>
+        <module>zhuzhu-samples-github</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.bpazy</groupId>
+            <artifactId>zhuzhu-project</artifactId>
+            <version>${reversion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.11.3</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+    </dependencies>
+</project>

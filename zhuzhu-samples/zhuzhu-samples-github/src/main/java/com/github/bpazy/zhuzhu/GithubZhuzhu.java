@@ -4,21 +4,19 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.junit.Test;
 
 /**
  * @author ziyuan
  */
-@Slf4j
-public class MainTest {
+public class GithubZhuzhu {
 
-    @Test
-    public void testCrawlerController() {
+    public static void main(String[] args) {
         CrawlerController controller = new CrawlerController();
         controller.addSeed("https://www.baidu.com");
         controller.start(MyWebCrawler.class);
     }
 
+    @Slf4j
     public static class MyWebCrawler implements WebCrawler {
         @Override
         public boolean shouldVisit(String url) {

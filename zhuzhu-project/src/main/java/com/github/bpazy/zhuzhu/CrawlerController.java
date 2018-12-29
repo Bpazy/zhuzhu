@@ -3,8 +3,6 @@ package com.github.bpazy.zhuzhu;
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import com.github.bpazy.zhuzhu.url.ZUrl;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +15,6 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
