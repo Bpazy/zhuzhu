@@ -7,7 +7,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
@@ -19,14 +18,7 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class Util {
 
-    public static List<String> extractUrls(String fullUrl, byte[] contentBytes, String charset) {
-        if (StringUtils.isAnyBlank(fullUrl, charset)) return Collections.emptyList();
-        fullUrl = fullUrl.endsWith("/") ? StringUtils.removeEnd(fullUrl, "/") : fullUrl;
-        String relativeDomain = StringUtils.substringBeforeLast(fullUrl, "/");
-
-        String domain = getDomain(fullUrl);
-        String absoluteDomain = domain.endsWith("/") ? StringUtils.removeEnd(domain, "?") : domain;
-
+    public static List<String> extractUrls(byte[] contentBytes, String charset) {
         String content;
         try {
             content = IOUtils.toString(contentBytes, charset);
@@ -35,15 +27,9 @@ public class Util {
             return Collections.emptyList();
         }
         Document doc = Jsoup.parse(content);
-        Elements links = doc.select("a[href]");
-        return links.eachAttr("href").stream()
-                .filter(u -> !u.startsWith("javascript:"))
-                .filter(u -> !u.startsWith("#"))
-                .map(u -> {
-                    if (u.startsWith("http")) return u;
-                    if (u.startsWith("/")) return absoluteDomain + u;
-                    return relativeDomain + "/" + u;
-                })
+        return doc.select("a[href]")
+                .eachAttr("abs:href").stream()
+                .filter(u -> u.startsWith("http"))
                 .collect(Collectors.toList());
     }
 
