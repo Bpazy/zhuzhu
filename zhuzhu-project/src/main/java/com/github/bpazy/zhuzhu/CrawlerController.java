@@ -72,7 +72,6 @@ public class CrawlerController {
                         List<String> urls = Util.extractUrls(zUrl.getUrl(), contentBytes, "UTF8");
                         urls.stream()
                                 .map(String::trim)
-                                .peek(u -> log.debug("willVisited {}", u))
                                 .filter(schedule::unVisited)
                                 .peek(u -> log.debug("unVisited {}", u))
                                 .filter(webCrawler::shouldVisit)
