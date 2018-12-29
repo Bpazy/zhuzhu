@@ -16,6 +16,7 @@
     <modules>
         <module>zhuzhu-samples-baidu</module>
         <module>zhuzhu-samples-github</module>
+        <module>zhuzhu-samples-gitee</module>
     </modules>
 
     <dependencies>
