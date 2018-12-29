@@ -14,7 +14,7 @@
     </modules>
 
     <properties>
-        <reversion>1.0.0</reversion>
+        <reversion>1.0.1-SNAPSHOT</reversion>
     </properties>
 
     <licenses>
