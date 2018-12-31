@@ -21,7 +21,7 @@ public class GiteeZhuzhu {
     public static void main(String[] args) {
         CrawlerController controller = new CrawlerController();
         controller.addSeed("https://gitee.com/lemur/easypoi");
-        controller.setThreadNum(10);
+        controller.setThreadNum(5);
         controller.start(MyWebCrawler.class);
     }
 

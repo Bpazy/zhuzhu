@@ -12,6 +12,7 @@ public class BaiduZhuzhu {
 
     public static void main(String[] args) {
         CrawlerController controller = new CrawlerController();
+        controller.setThreadNum(10);
         controller.addSeed("https://www.baidu.com");
         controller.start(MyWebCrawler.class);
     }

@@ -2,6 +2,7 @@ package com.github.bpazy.zhuzhu.schdule;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ public class UniqueSchedule implements Schedule {
     public String take() {
         try {
             lock.lock();
+            if (CollectionUtils.isEmpty(seeds)) return "";
 
             return seeds.remove(0);
         } finally {
@@ -33,8 +35,10 @@ public class UniqueSchedule implements Schedule {
         try {
             lock.lock();
 
-            visited.add(url);
-            seeds.add(url);
+            boolean notVisited = visited.add(url);
+            if (notVisited) {
+                seeds.add(url);
+            }
         } finally {
             lock.unlock();
         }

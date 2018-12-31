@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author ziyuan
@@ -41,52 +40,46 @@ public class CrawlerController {
     public CrawlerController() {
     }
 
+    @SneakyThrows
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         ensureSchedule();
         ensureRequestConfig();
 
-        ExecutorService executor = Executors.newCachedThreadPool();
+        ExecutorService executor = Executors.newFixedThreadPool(threadNum);
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
-        for (int i = 0; i < threadNum; i++) {
+        while (true) {
+            String url = schedule.take();
+            if (StringUtils.isBlank(url)) {
+                Thread.sleep(1000);
+                continue;
+            }
             executor.execute(() -> {
-                // TODO java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
-                //  because consume faster than produce
-                while (true) {
-                    String url = schedule.take();
-                    if (StringUtils.isBlank(url)) return;
-
-                    HttpGet httpGet = new HttpGet(url);
-                    httpGet.setConfig(requestConfig);
-                    try (CloseableHttpResponse response = client.execute(httpGet)) {
-                        byte[] contentBytes = null;
-                        try {
-                            contentBytes = IOUtils.toByteArray(response.getEntity().getContent());
-                        } catch (IOException e) {
-                            log.error("{}", e);
-                        }
-                        if (contentBytes == null) continue;
-
-                        List<String> urls = Util.extractUrls(contentBytes, "UTF8");
-                        urls.stream()
-                                .map(String::trim)
-                                .filter(webCrawler::shouldVisit)
-                                .peek(u -> log.debug("will visit {}", u))
-                                .forEach(schedule::add);
-
-                        webCrawler.visit(url, contentBytes);
+                HttpGet httpGet = new HttpGet(url);
+                httpGet.setConfig(requestConfig);
+                try (CloseableHttpResponse response = client.execute(httpGet)) {
+                    byte[] contentBytes = null;
+                    try {
+                        contentBytes = IOUtils.toByteArray(response.getEntity().getContent());
                     } catch (IOException e) {
-                        log.warn("can not read {}", httpGet.getURI());
+                        log.error("{}", e);
                     }
+                    if (contentBytes == null) return;
+
+                    List<String> urls = Util.extractUrls(contentBytes, "UTF8");
+                    urls.stream()
+                            .map(String::trim)
+                            .filter(webCrawler::shouldVisit)
+                            .peek(u -> log.debug("will visit {}", u))
+                            .forEach(schedule::add);
+
+                    webCrawler.visit(url, contentBytes);
+                    // TODO check crawler is finished
+                } catch (IOException e) {
+                    log.warn("can not read {}", httpGet.getURI());
                 }
             });
         }
-        executor.shutdown();
-        try {
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            log.error("{}", e);
-        }
-        log.info("Crawler stopped because of seeds is empty.");
+//        log.info("Crawler stopped because of seeds is empty.");
     }
 
     private void ensureRequestConfig() {
