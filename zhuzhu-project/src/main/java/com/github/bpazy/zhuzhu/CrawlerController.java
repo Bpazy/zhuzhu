@@ -61,7 +61,7 @@ public class CrawlerController {
                     try {
                         contentBytes = IOUtils.toByteArray(response.getEntity().getContent());
                     } catch (IOException e) {
-                        log.error("{}", e);
+                        log.error("", e);
                     }
                     if (contentBytes == null) return;
 
