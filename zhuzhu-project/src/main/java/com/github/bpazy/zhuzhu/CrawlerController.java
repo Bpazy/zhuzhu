@@ -65,7 +65,7 @@ public class CrawlerController {
                     }
                     if (contentBytes == null) return;
 
-                    List<String> urls = Util.extractUrls(contentBytes, "UTF8");
+                    List<String> urls = Utils.extractUrls(Utils.getBaseUrl(url), contentBytes, "UTF8");
                     urls.stream()
                             .map(String::trim)
                             .filter(webCrawler::shouldVisit)
