@@ -3,7 +3,6 @@ package com.github.bpazy.zhuzhu;
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,14 +24,17 @@ import java.util.concurrent.Executors;
  */
 @Slf4j
 public class CrawlerController {
+    private static final int DEFAULT_THREAD_NUMBER = 1;
+    private static final int REQUEST_TIMEOUT = 3000;
+
     @Setter
-    private int threadNum = 1;
+    private int threadNum;
     @Setter
     private Schedule schedule;
     @Setter
     private HttpHost proxy;
-
-    private static final int timeout = 3000;
+    @Setter
+    private int timeout;
 
     private CloseableHttpClient client = HttpClients.createDefault();
     private RequestConfig requestConfig;
@@ -40,17 +42,20 @@ public class CrawlerController {
     public CrawlerController() {
     }
 
-    @SneakyThrows
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
-        ensureSchedule();
-        ensureRequestConfig();
+        init();
 
         ExecutorService executor = Executors.newFixedThreadPool(threadNum);
         WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
         while (true) {
             String url = schedule.take();
             if (StringUtils.isBlank(url)) {
-                Thread.sleep(1000);
+                try {
+                    Thread.sleep(timeout);
+                } catch (InterruptedException e) {
+                    log.error("", e);
+                    break;
+                }
                 continue;
             }
             executor.execute(() -> {
@@ -79,10 +84,20 @@ public class CrawlerController {
                 }
             });
         }
-//        log.info("Crawler stopped because of seeds is empty.");
+        log.info("Crawler stopped because of seeds is empty.");
     }
 
-    private void ensureRequestConfig() {
+    private void init() {
+        if (threadNum < DEFAULT_THREAD_NUMBER) {
+            log.warn("Thread number should be a positive integer. The thread number is now set to {}.", DEFAULT_THREAD_NUMBER);
+            threadNum = DEFAULT_THREAD_NUMBER;
+        }
+        if (timeout <= 0) {
+            log.warn("timeout should be greater than 0. The timeout is now set to {}ms.", REQUEST_TIMEOUT);
+            timeout = REQUEST_TIMEOUT;
+        }
+
+        // 初始化requestConfig
         RequestConfig.Builder builder = RequestConfig.custom()
                 .setCookieSpec(CookieSpecs.STANDARD)
                 .setConnectTimeout(timeout)
@@ -92,6 +107,8 @@ public class CrawlerController {
             builder.setProxy(proxy);
         }
         requestConfig = builder.build();
+
+        ensureSchedule();
     }
 
     private void ensureSchedule() {
@@ -106,21 +123,4 @@ public class CrawlerController {
         schedule.add(url);
     }
 
-    public interface WebCrawlerFactory<T> {
-        T newInstance();
-    }
-
-    public class DefaultWebCrawlerFactory implements WebCrawlerFactory<WebCrawler> {
-        private Class<? extends WebCrawler> clazz;
-
-        public DefaultWebCrawlerFactory(Class<? extends WebCrawler> clazz) {
-            this.clazz = clazz;
-        }
-
-        @Override
-        @SneakyThrows
-        public WebCrawler newInstance() {
-            return clazz.newInstance();
-        }
-    }
 }
