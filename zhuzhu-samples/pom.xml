@@ -23,7 +23,7 @@
     <dependencies>
         <dependency>
             <groupId>com.github.bpazy</groupId>
-            <artifactId>zhuzhu</artifactId>
+            <artifactId>zhuzhu-project</artifactId>
             <version>${reversion}</version>
         </dependency>
         <dependency>

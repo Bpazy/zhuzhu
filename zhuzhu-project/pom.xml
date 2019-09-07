@@ -10,7 +10,7 @@
         <relativePath>../</relativePath>
     </parent>
 
-    <artifactId>zhuzhu</artifactId>
+    <artifactId>zhuzhu-project</artifactId>
     <name>Zhuzhu Project</name>
 
     <dependencies>
