@@ -46,7 +46,7 @@ public class CrawlerController {
         init();
 
         ExecutorService executor = Executors.newFixedThreadPool(threadNum);
-        WebCrawler webCrawler = new DefaultWebCrawlerFactory(webCrawlerClass).newInstance();
+        WebCrawler webCrawler = new WebCrawlerFactory(webCrawlerClass).newInstance();
         while (true) {
             String url = schedule.take();
             if (StringUtils.isBlank(url)) {
