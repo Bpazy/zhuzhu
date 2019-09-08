@@ -1,4 +1,4 @@
-package zhuzhu;
+package com.github.bpazy.zhuzhu;
 
 import com.github.bpazy.zhuzhu.CrawlerController;
 import com.github.bpazy.zhuzhu.WebCrawler;
