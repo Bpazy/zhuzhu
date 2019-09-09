@@ -3,8 +3,8 @@ package com.github.bpazy.zhuzhu;
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import org.joor.Reflect;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CrawlerControllerTest {
     private CrawlerController controller;
 
-    @Before
+    @BeforeEach
     public void init() {
         controller = new CrawlerController();
     }

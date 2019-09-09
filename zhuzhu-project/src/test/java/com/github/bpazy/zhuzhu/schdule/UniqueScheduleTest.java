@@ -2,8 +2,8 @@ package com.github.bpazy.zhuzhu.schdule;
 
 import com.google.common.collect.Lists;
 import org.joor.Reflect;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UniqueScheduleTest {
     private Schedule schedule;
 
-    @Before
+    @BeforeEach
     public void init() {
         schedule = new UniqueSchedule();
     }
