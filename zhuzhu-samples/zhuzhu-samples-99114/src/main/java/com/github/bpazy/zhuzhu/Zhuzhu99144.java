@@ -1,7 +1,6 @@
 package com.github.bpazy.zhuzhu;
 
-import com.github.bpazy.zhuzhu.CrawlerController;
-import com.github.bpazy.zhuzhu.WebCrawler;
+import com.github.bpazy.zhuzhu.schdule.RedisUniqueSchedule;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -17,6 +16,7 @@ public class Zhuzhu99144 {
 
     public static void main(String[] args) {
         CrawlerController controller = new CrawlerController();
+        controller.setSchedule(new RedisUniqueSchedule("127.0.0.1", 6379, true));
         controller.addSeed("http://shop.99114.com/");
         controller.setThreadNum(5);
         controller.start(MyWebCrawler.class);
