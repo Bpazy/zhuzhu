@@ -2,9 +2,14 @@ package com.github.bpazy.zhuzhu;
 
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
+import com.google.common.collect.Lists;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 import org.joor.Reflect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,7 +37,7 @@ public class CrawlerControllerTest {
     }
 
     @Test
-    public void testThreadNum() {
+    public void testInnerFields() {
         controller.setThreadNum(-1);
         controller.setTimeout(-1);
         Reflect.on(controller).call("init");
@@ -40,6 +45,10 @@ public class CrawlerControllerTest {
         assertThat(Reflect.on(controller).<Schedule>get("timeout")).isEqualTo(3000);
         controller.setThreadNum(Integer.MAX_VALUE);
         assertThat(Reflect.on(controller).<Schedule>get("threadNum")).isEqualTo(Integer.MAX_VALUE);
+
+        List<Header> testHeaders = Lists.newArrayList(new BasicHeader("name", "value"));
+        controller.setHeaders(testHeaders);
+        assertThat(Reflect.on(controller).<Schedule>get("headers")).isEqualTo(testHeaders);
     }
 
     private static class TestSchedule implements Schedule {

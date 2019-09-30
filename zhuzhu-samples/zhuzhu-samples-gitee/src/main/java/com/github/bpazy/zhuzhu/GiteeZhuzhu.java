@@ -1,8 +1,9 @@
 package com.github.bpazy.zhuzhu;
 
+import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.http.message.BasicHeader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,17 +12,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * TODO
- *
  * @author ziyuan
  */
 public class GiteeZhuzhu {
-
 
     public static void main(String[] args) {
         CrawlerController controller = new CrawlerController();
         controller.addSeed("https://gitee.com/lemur/easypoi");
         controller.setThreadNum(5);
+        controller.setHeaders(Lists.newArrayList(
+                new BasicHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"),
+                new BasicHeader("Accept-Encoding", "gzip, deflate, br"),
+                new BasicHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,zh-HK;q=0.7"),
+                new BasicHeader("Connection", "keep-alive"),
+                new BasicHeader("Host", "gitee.com"),
+                new BasicHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36")
+        ));
         controller.start(MyWebCrawler.class);
     }
 

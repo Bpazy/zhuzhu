@@ -39,6 +39,8 @@ public class CrawlerController {
     private HttpHost proxy;
     @Setter
     private int timeout;
+    @Setter
+    private List<Header> headers;
 
     private CloseableHttpClient client = HttpClients.createDefault();
     private RequestConfig requestConfig;
@@ -70,6 +72,7 @@ public class CrawlerController {
             }
             executor.execute(() -> {
                 HttpGet httpGet = new HttpGet(url);
+                headers.forEach(httpGet::addHeader);
                 httpGet.setConfig(requestConfig);
                 try (CloseableHttpResponse response = client.execute(httpGet)) {
                     byte[] contentBytes = null;
