@@ -13,7 +13,7 @@ class RedisUniqueScheduleTest {
 
     @BeforeEach
     public void init() {
-        schedule = new RedisUniqueSchedule("127.0.0.1", 6379, false) {
+        schedule = new RedisUniqueSchedule("127.0.0.1", 6379, true) {
             @Override
             protected String getKey(String url) {
                 return "zhuzhu:test:" + url;

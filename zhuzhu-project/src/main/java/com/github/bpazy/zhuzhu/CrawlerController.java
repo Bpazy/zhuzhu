@@ -2,6 +2,8 @@ package com.github.bpazy.zhuzhu;
 
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
+import com.google.common.collect.Lists;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -27,20 +29,27 @@ import java.util.concurrent.TimeUnit;
  * @author ziyuan
  */
 @Slf4j
-public class CrawlerController {
+public class CrawlerController implements Crawler {
     private static final int DEFAULT_THREAD_NUMBER = 1;
     private static final int REQUEST_TIMEOUT = 3000;
 
     @Setter
+    @Getter
     private int threadNum;
     @Setter
+    @Getter
     private Schedule schedule;
     @Setter
+    @Getter
     private HttpHost proxy;
     @Setter
+    @Getter
     private int timeout;
     @Setter
+    @Getter
     private List<Header> headers;
+    @Getter
+    private List<String> seeds = Lists.newArrayList();
 
     private CloseableHttpClient client = HttpClients.createDefault();
     private RequestConfig requestConfig;
@@ -48,6 +57,7 @@ public class CrawlerController {
     public CrawlerController() {
     }
 
+    @Override
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         init();
 
@@ -131,8 +141,10 @@ public class CrawlerController {
 
     public void addSeed(String url) {
         ensureSchedule();
+        this.seeds.add(url);
 
-        schedule.add(url);
+        // add seeds to schedule
+        this.seeds.forEach(schedule::add);
     }
 
 }
