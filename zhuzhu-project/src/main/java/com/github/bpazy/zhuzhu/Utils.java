@@ -1,6 +1,5 @@
 package com.github.bpazy.zhuzhu;
 
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
@@ -13,10 +12,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Utils the project has.<p>
+ * Still unstable
+ */
 @Slf4j
-@UtilityClass
 public class Utils {
 
+    /**
+     * return all urls in body
+     *
+     * @param baseUrl      base url to build the complete url
+     * @param contentBytes body bytes
+     * @param charset      body charset to encode body bytes
+     * @return all urls in body
+     */
     public static List<String> extractUrls(String baseUrl, byte[] contentBytes, String charset) {
         String content;
         try {
@@ -32,6 +42,13 @@ public class Utils {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get base url from full url
+     *
+     * @param url full url
+     * @return base url
+     * @throws MalformedURLException if no protocol is specified, or an unknown protocol is found, or spec is null.
+     */
     public static String getBaseUrl(String url) throws MalformedURLException {
         URL url1 = new URL(url);
         return url1.getProtocol() + "://" + url1.getHost();
