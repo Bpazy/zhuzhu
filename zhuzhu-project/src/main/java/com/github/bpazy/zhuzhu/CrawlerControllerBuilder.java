@@ -48,14 +48,18 @@ public class CrawlerControllerBuilder {
         return this;
     }
 
-    public CrawlerController build() {
+    public Crawler build() {
         CrawlerController controller = new CrawlerController();
-        controller.setHeaders(headers);
+        if (headers != null) {
+            controller.getHeaders().addAll(headers);
+        }
         controller.setTimeout(timeout);
         controller.setSchedule(schedule);
         controller.setThreadNum(threadNum);
         controller.setProxy(proxy);
-        seeds.forEach(controller::addSeed);
+        if (seeds != null) {
+            seeds.forEach(controller::addSeed);
+        }
         return controller;
     }
 }

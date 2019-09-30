@@ -17,18 +17,17 @@ import java.util.regex.Pattern;
 public class GiteeZhuzhu {
 
     public static void main(String[] args) {
-        CrawlerController controller = new CrawlerController();
-        controller.addSeed("https://gitee.com/lemur/easypoi");
-        controller.setThreadNum(5);
-        controller.setHeaders(Lists.newArrayList(
-                new BasicHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"),
-                new BasicHeader("Accept-Encoding", "gzip, deflate, br"),
-                new BasicHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,zh-HK;q=0.7"),
-                new BasicHeader("Connection", "keep-alive"),
-                new BasicHeader("Host", "gitee.com"),
-                new BasicHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36")
-        ));
-        controller.start(MyWebCrawler.class);
+        Crawlers.custom()
+                .seeds(Lists.newArrayList("https://gitee.com/lemur/easypoi"))
+                .threadNum(5)
+                .headers(Lists.newArrayList(
+                        new BasicHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"),
+                        new BasicHeader("Accept-Encoding", "gzip, deflate, br"),
+                        new BasicHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,zh-HK;q=0.7"),
+                        new BasicHeader("Connection", "keep-alive"),
+                        new BasicHeader("Host", "gitee.com"),
+                        new BasicHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36")))
+                .build().start(MyWebCrawler.class);
     }
 
     @Slf4j

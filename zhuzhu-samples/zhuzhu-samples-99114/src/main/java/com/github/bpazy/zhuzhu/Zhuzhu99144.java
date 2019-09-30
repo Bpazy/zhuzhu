@@ -1,6 +1,7 @@
 package com.github.bpazy.zhuzhu;
 
 import com.github.bpazy.zhuzhu.schdule.RedisUniqueSchedule;
+import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -15,11 +16,11 @@ import java.util.regex.Pattern;
 public class Zhuzhu99144 {
 
     public static void main(String[] args) {
-        CrawlerController controller = new CrawlerController();
-        controller.setSchedule(new RedisUniqueSchedule("127.0.0.1", 6379, true));
-        controller.addSeed("http://shop.99114.com/");
-        controller.setThreadNum(5);
-        controller.start(MyWebCrawler.class);
+        Crawlers.custom()
+                .schedule(new RedisUniqueSchedule("127.0.0.1", 6379, true))
+                .seeds(Lists.newArrayList("http://shop.99114.com/"))
+                .threadNum(5)
+                .build().start(MyWebCrawler.class);
     }
 
     @Slf4j

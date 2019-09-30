@@ -57,7 +57,7 @@ public class CrawlersTest {
 
     @Test
     public void buildCrawlerControllerTest() {
-        CrawlerController controller = getDefaultTestCrawlerController();
+        CrawlerController controller = (CrawlerController) getDefaultTestCrawlerController();
         assertThat(controller.getHeaders()).isEqualTo(testHeaders);
         assertThat(controller.getProxy()).isEqualTo(testProxy);
         assertThat(controller.getThreadNum()).isEqualTo(testThreadNum);
@@ -66,7 +66,7 @@ public class CrawlersTest {
         assertThat(controller.getSeeds()).isEqualTo(testSeeds);
     }
 
-    private CrawlerController getDefaultTestCrawlerController() {
+    private Crawler getDefaultTestCrawlerController() {
         return Crawlers.custom()
                 .headers(testHeaders)
                 .proxy(testProxy)

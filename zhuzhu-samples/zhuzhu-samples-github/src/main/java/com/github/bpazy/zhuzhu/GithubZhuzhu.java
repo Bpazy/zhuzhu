@@ -1,5 +1,6 @@
 package com.github.bpazy.zhuzhu;
 
+import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
@@ -18,11 +19,12 @@ public class GithubZhuzhu {
 
 
     public static void main(String[] args) {
-        CrawlerController controller = new CrawlerController();
-        controller.addSeed("https://github.com/Bpazy/zhuzhu");
-        controller.setProxy(new HttpHost("127.0.0.1", 8889));
-        controller.setThreadNum(5);
-        controller.start(MyWebCrawler.class);
+        Crawlers.custom()
+                .seeds(Lists.newArrayList("https://github.com/Bpazy/zhuzhu"))
+                .proxy(new HttpHost("127.0.0.1", 8889))
+                .threadNum(5)
+                .build()
+                .start(MyWebCrawler.class);
     }
 
     @Slf4j

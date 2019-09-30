@@ -47,7 +47,7 @@ public class CrawlerController implements Crawler {
     private int timeout;
     @Setter
     @Getter
-    private List<Header> headers;
+    private List<Header> headers = Lists.newArrayList();
     @Getter
     private List<String> seeds = Lists.newArrayList();
 
