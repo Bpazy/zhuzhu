@@ -10,10 +10,6 @@ public class RedisUniqueSchedule implements Schedule {
     private final JedisPool jedisPool;
     private static final String VISITED = "1";
 
-    public RedisUniqueSchedule(String host, int port) {
-        this(host, port, false);
-    }
-
     /**
      * @param host    redis server host
      * @param port    redis server port
