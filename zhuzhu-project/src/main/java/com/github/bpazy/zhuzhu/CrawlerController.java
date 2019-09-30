@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -16,6 +15,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,8 +30,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class CrawlerController implements Crawler {
-    private static final int DEFAULT_THREAD_NUMBER = 1;
-    private static final int REQUEST_TIMEOUT = 3000;
 
     @Setter
     @Getter
@@ -61,7 +59,7 @@ public class CrawlerController implements Crawler {
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         init();
 
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(0, threadNum, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        ThreadPoolExecutor executor = getThreadPoolExecutor();
         WebCrawler webCrawler = new WebCrawlerFactory(webCrawlerClass).newInstance();
         while (true) {
             String url = schedule.take();
@@ -85,14 +83,7 @@ public class CrawlerController implements Crawler {
                 headers.forEach(httpGet::addHeader);
                 httpGet.setConfig(requestConfig);
                 try (CloseableHttpResponse response = client.execute(httpGet)) {
-                    byte[] contentBytes = null;
-                    try {
-                        contentBytes = IOUtils.toByteArray(response.getEntity().getContent());
-                    } catch (IOException e) {
-                        log.error("", e);
-                    }
-                    if (contentBytes == null) return;
-
+                    byte[] contentBytes = EntityUtils.toByteArray(response.getEntity());
                     List<String> urls = Utils.extractUrls(Utils.getBaseUrl(url), contentBytes, "UTF8");
                     urls.stream()
                             .map(String::trim)
@@ -102,23 +93,20 @@ public class CrawlerController implements Crawler {
 
                     webCrawler.visit(url, contentBytes);
                 } catch (IOException e) {
-                    log.warn("can not read {}", httpGet.getURI());
+                    log.warn("can not read {}, {}", httpGet.getURI(), e.getMessage());
                 }
             });
         }
         log.info("Crawler finished.");
     }
 
-    private void init() {
-        if (threadNum < DEFAULT_THREAD_NUMBER) {
-            log.warn("Thread number should be a positive integer. The thread number is now set to {}.", DEFAULT_THREAD_NUMBER);
-            threadNum = DEFAULT_THREAD_NUMBER;
-        }
-        if (timeout <= 0) {
-            log.warn("timeout should be greater than 0. The timeout is now set to {}ms.", REQUEST_TIMEOUT);
-            timeout = REQUEST_TIMEOUT;
-        }
+    private ThreadPoolExecutor getThreadPoolExecutor() {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(threadNum, threadNum, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
+    }
 
+    private void init() {
         // 初始化requestConfig
         RequestConfig.Builder builder = RequestConfig.custom()
                 .setCookieSpec(CookieSpecs.STANDARD)

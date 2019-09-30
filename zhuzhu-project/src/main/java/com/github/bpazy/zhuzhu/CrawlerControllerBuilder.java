@@ -1,6 +1,7 @@
 package com.github.bpazy.zhuzhu;
 
 import com.github.bpazy.zhuzhu.schdule.Schedule;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 
@@ -10,7 +11,11 @@ import java.util.List;
  * @author ziyuan
  * created on 2019/9/30
  */
+@Slf4j
 public class CrawlerControllerBuilder {
+    private static final int DEFAULT_THREAD_NUMBER = 1;
+    private static final int REQUEST_TIMEOUT = 3000;
+
     private List<Header> headers;
     private HttpHost proxy;
     private int threadNum;
@@ -53,8 +58,16 @@ public class CrawlerControllerBuilder {
         if (headers != null) {
             controller.getHeaders().addAll(headers);
         }
+        if (timeout <= 0) {
+            log.warn("timeout should be greater than 0. The timeout is now set to {}ms.", REQUEST_TIMEOUT);
+            timeout = REQUEST_TIMEOUT;
+        }
         controller.setTimeout(timeout);
         controller.setSchedule(schedule);
+        if (threadNum < DEFAULT_THREAD_NUMBER) {
+            log.warn("Thread number should be a positive integer. The thread number is now set to {}.", DEFAULT_THREAD_NUMBER);
+            threadNum = DEFAULT_THREAD_NUMBER;
+        }
         controller.setThreadNum(threadNum);
         controller.setProxy(proxy);
         if (seeds != null) {

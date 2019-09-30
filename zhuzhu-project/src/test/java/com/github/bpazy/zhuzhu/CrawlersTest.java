@@ -1,11 +1,13 @@
 package com.github.bpazy.zhuzhu;
 
+import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
+import org.joor.Reflect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +68,33 @@ public class CrawlersTest {
         assertThat(controller.getSeeds()).isEqualTo(testSeeds);
     }
 
+
+    @Test
+    public void testInnerFields() {
+        List<Header> testHeaders = Lists.newArrayList(new BasicHeader("name", "value"));
+        CrawlerControllerBuilder builder = Crawlers.custom()
+                .headers(testHeaders)
+                .proxy(testProxy)
+                .threadNum(-1)
+                .timeout(-1)
+                .schedule(testUniqueSchedule)
+                .seeds(testSeeds);
+        CrawlerController crawler1 = (CrawlerController) builder.build();
+        assertThat(crawler1.getThreadNum()).isEqualTo(1);
+        assertThat(crawler1.getTimeout()).isEqualTo(3000);
+        assertThat(crawler1.getHeaders()).isEqualTo(testHeaders);
+
+        CrawlerController defaultScheduleCrawler = (CrawlerController) Crawlers.custom().seeds(Lists.newArrayList("https://github.com")).build();
+        assertThat(defaultScheduleCrawler.getSchedule()).isInstanceOf(UniqueSchedule.class);
+
+        Schedule schedule = new TestSchedule();
+        CrawlerController specifiedScheduleCrawler = (CrawlerController) Crawlers.custom().schedule(schedule).build();
+        assertThat(specifiedScheduleCrawler.getSchedule()).isInstanceOf(TestSchedule.class);
+
+        CrawlerController crawler2 = (CrawlerController) builder.threadNum(Integer.MAX_VALUE).build();
+        assertThat(crawler2.getThreadNum()).isEqualTo(Integer.MAX_VALUE);
+    }
+
     private Crawler getDefaultTestCrawlerController() {
         return Crawlers.custom()
                 .headers(testHeaders)
@@ -94,6 +123,18 @@ public class CrawlersTest {
 
         @Override
         public void visit(String url, byte[] content) {
+        }
+    }
+
+    public static class TestSchedule implements Schedule {
+        @Override
+        public String take() {
+            return null;
+        }
+
+        @Override
+        public void add(String url) {
+
         }
     }
 }
