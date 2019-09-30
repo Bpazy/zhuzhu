@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -16,11 +17,12 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
- * TODO setSchedule before addSeed
+ * TODO setSchedule before addSeed. Maybe builder is necessary.
  *
  * @author ziyuan
  */
@@ -47,12 +49,18 @@ public class CrawlerController {
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         init();
 
-        ExecutorService executor = Executors.newFixedThreadPool(threadNum);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(0, threadNum, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
         WebCrawler webCrawler = new WebCrawlerFactory(webCrawlerClass).newInstance();
         while (true) {
             String url = schedule.take();
             if (StringUtils.isBlank(url)) {
+                // exit when schedule is empty and thread poll is empty
+                if (executor.getPoolSize() == 0) {
+                    break;
+                }
+
                 try {
+                    // TODO schedule.wait()
                     Thread.sleep(timeout);
                 } catch (InterruptedException e) {
                     log.error("", e);
@@ -80,13 +88,12 @@ public class CrawlerController {
                             .forEach(schedule::add);
 
                     webCrawler.visit(url, contentBytes);
-                    // TODO check crawler is finished
                 } catch (IOException e) {
                     log.warn("can not read {}", httpGet.getURI());
                 }
             });
         }
-        log.info("Crawler stopped because of seeds is empty.");
+        log.info("Crawler finished.");
     }
 
     private void init() {
