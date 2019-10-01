@@ -8,4 +8,7 @@ public interface WebCrawler {
 
     // TODO Maybe object wrapper is needed because of multiple parameters.
     void visit(String url, byte[] content);
+
+    // TODO Maybe pipeline is better.
+    //  shouldVisit -> visit(filter) -> handle(filtered data)
 }
