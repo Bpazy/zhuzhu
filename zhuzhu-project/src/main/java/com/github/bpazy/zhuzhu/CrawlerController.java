@@ -57,6 +57,7 @@ public class CrawlerController implements Crawler {
 
     @Override
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
+        log.info("Crawler start");
         init();
 
         ThreadPoolExecutor executor = getThreadPoolExecutor();
@@ -79,6 +80,7 @@ public class CrawlerController implements Crawler {
                 continue;
             }
             executor.execute(() -> {
+                log.debug("Start crawling {}", url);
                 HttpGet httpGet = new HttpGet(url);
                 headers.forEach(httpGet::addHeader);
                 httpGet.setConfig(requestConfig);
@@ -88,16 +90,16 @@ public class CrawlerController implements Crawler {
                     urls.stream()
                             .map(String::trim)
                             .filter(webCrawler::shouldVisit)
-                            .peek(u -> log.debug("will visit {}", u))
+                            .peek(u -> log.debug("Will visit {}", u))
                             .forEach(schedule::add);
 
                     webCrawler.visit(url, contentBytes);
                 } catch (IOException e) {
-                    log.warn("can not read {}, {}", httpGet.getURI(), e.getMessage());
+                    log.warn("Can not read {}, {}", httpGet.getURI(), e.getMessage());
                 }
             });
         }
-        log.info("Crawler finished.");
+        log.info("Crawler finished");
     }
 
     private ThreadPoolExecutor getThreadPoolExecutor() {

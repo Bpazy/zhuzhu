@@ -1,6 +1,7 @@
 package com.github.bpazy.zhuzhu.schdule;
 
 /**
+ * TODO a method to mark loaded
  * @author ziyuan
  */
 public interface Schedule {

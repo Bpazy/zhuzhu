@@ -4,6 +4,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 /**
+ * TODO add an proxy to handle jedis connection
  * @author ziyuan
  */
 public class RedisUniqueSchedule implements Schedule {
@@ -33,12 +34,19 @@ public class RedisUniqueSchedule implements Schedule {
 
     @Override
     public void add(String url) {
-        Jedis jedis = jedisPool.getResource();
-        if (jedis.setnx(getKey(url), VISITED) == 0) {
+        if (setnx(url)) {
             return;
         }
+        Jedis jedis = jedisPool.getResource();
         jedis.lpush(getListKey(), url);
         jedis.close();
+    }
+
+    private boolean setnx(String url) {
+        Jedis jedis = jedisPool.getResource();
+        boolean b = jedis.setnx(getKey(url), VISITED) == 0;
+        jedis.close();
+        return b;
     }
 
     public void close() {
