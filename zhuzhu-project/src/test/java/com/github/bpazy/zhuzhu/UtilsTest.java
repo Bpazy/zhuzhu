@@ -4,13 +4,11 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 
 /**
@@ -33,25 +31,17 @@ public class UtilsTest {
                 baseUrl + "/b.img",
         };
         assertThat(expectedUrls).isEqualTo(urls.toArray());
-    }
 
-    @Test
-    public void getBaseUrlTest() throws MalformedURLException {
-        String[] urls = new String[]{
-                "https://github.com",
-                "https://github.com/bpazy",
-                "https://github.com/bpazy/test.html",
-                "a://github.com/bpazy/test.html",
-                "github.com/bpazy/test.html",
+
+        String baseUrl2 = "https://github.com/test";
+        String relativePath = "/1.html";
+        List<String> urls2 = Utils.extractUrls(baseUrl2 + relativePath, extractUrlsHtml.getBytes(), StandardCharsets.UTF_8.toString());
+
+        String[] expectedUrls2 = new String[]{
+                "https://www.baidu.com",
+                baseUrl2 + "/a.html",
+                baseUrl2 + "/b.img",
         };
-        for (int i = 0; i < 3; i++) {
-            assertThat(Utils.getBaseUrl(urls[i])).isEqualTo(urls[0]);
-        }
-
-        for (int i = 3; i < 5; i++) {
-            int finalI = i;
-            Throwable thrown = catchThrowable(() -> Utils.getBaseUrl(urls[finalI]));
-            assertThat(thrown).isInstanceOf(MalformedURLException.class);
-        }
+        assertThat(expectedUrls2).isEqualTo(urls2.toArray());
     }
 }

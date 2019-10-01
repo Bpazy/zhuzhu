@@ -86,7 +86,7 @@ public class CrawlerController implements Crawler {
                 httpGet.setConfig(requestConfig);
                 try (CloseableHttpResponse response = client.execute(httpGet)) {
                     byte[] contentBytes = EntityUtils.toByteArray(response.getEntity());
-                    List<String> urls = Utils.extractUrls(Utils.getBaseUrl(url), contentBytes, "UTF8");
+                    List<String> urls = Utils.extractUrls(url, contentBytes, "UTF8");
                     urls.stream()
                             .map(String::trim)
                             .filter(webCrawler::shouldVisit)
