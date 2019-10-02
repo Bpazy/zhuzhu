@@ -63,6 +63,7 @@ public class CrawlerController implements Crawler {
         ThreadPoolExecutor executor = getThreadPoolExecutor();
         WebCrawler webCrawler = new WebCrawlerFactory(webCrawlerClass).newInstance();
         while (true) {
+            // FIXME Control the rate of fetch, otherwise the thread pool queue will keep increasing
             String url = schedule.take();
             if (StringUtils.isBlank(url)) {
                 // exit when schedule is empty and thread poll is empty
