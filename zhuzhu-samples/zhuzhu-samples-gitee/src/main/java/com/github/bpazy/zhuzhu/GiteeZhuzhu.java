@@ -1,6 +1,6 @@
 package com.github.bpazy.zhuzhu;
 
-import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
+import com.github.bpazy.zhuzhu.schdule.RedisUniqueSchedule;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +22,8 @@ public class GiteeZhuzhu {
                 .seeds(Lists.newArrayList("https://gitee.com/lemur/easypoi"))
                 .threadNum(5)
                 .timeout(10000)
-//                .schedule(new RedisUniqueSchedule("127.0.0.1", 6379, true))
-                .schedule(new UniqueSchedule())
+                .schedule(new RedisUniqueSchedule("127.0.0.1", 6379, true))
+//                .schedule(new UniqueSchedule())
                 .headers(Lists.newArrayList(
                         new BasicHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"),
                         new BasicHeader("Accept-Encoding", "gzip, deflate, br"),

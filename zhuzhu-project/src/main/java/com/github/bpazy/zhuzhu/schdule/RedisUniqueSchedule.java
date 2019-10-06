@@ -1,14 +1,14 @@
 package com.github.bpazy.zhuzhu.schdule;
 
+import com.github.bpazy.zhuzhu.redis.JedisProxy;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 /**
- * TODO add an proxy to handle jedis connection
  * @author ziyuan
  */
 public class RedisUniqueSchedule implements Schedule {
-    private final JedisPool jedisPool;
+    private final JedisProxy jedisProxy;
     private static final String VISITED = "1";
 
     /**
@@ -17,7 +17,7 @@ public class RedisUniqueSchedule implements Schedule {
      * @param clearDB whether of not flushDB when crawler start
      */
     public RedisUniqueSchedule(String host, int port, boolean clearDB) {
-        jedisPool = new JedisPool(host, port);
+        jedisProxy = new JedisProxy(new JedisPool(host, port));
         if (clearDB) {
             clearDB();
         }
@@ -25,10 +25,7 @@ public class RedisUniqueSchedule implements Schedule {
 
     @Override
     public String take() {
-        Jedis jedis = jedisPool.getResource();
-        String url = jedis.lpop(getListKey());
-        jedis.close();
-        return url;
+        return jedisProxy.getJedis().lpop(getListKey());
     }
 
 
@@ -37,27 +34,17 @@ public class RedisUniqueSchedule implements Schedule {
         if (setnx(url)) {
             return;
         }
-        Jedis jedis = jedisPool.getResource();
-        jedis.lpush(getListKey(), url);
-        jedis.close();
+        jedisProxy.getJedis().lpush(getListKey(), url);
     }
 
     private boolean setnx(String url) {
-        Jedis jedis = jedisPool.getResource();
-        boolean b = jedis.setnx(getKey(url), VISITED) == 0;
-        jedis.close();
-        return b;
-    }
-
-    public void close() {
-        jedisPool.close();
+        return jedisProxy.getJedis().setnx(getKey(url), VISITED) == 0;
     }
 
     public void clearDB() {
-        Jedis jedis = jedisPool.getResource();
+        Jedis jedis = jedisProxy.getJedis();
         jedis.del(getListKey());
         jedis.keys(getKey("*")).forEach(jedis::del);
-        jedis.close();
     }
 
     /**
@@ -72,5 +59,9 @@ public class RedisUniqueSchedule implements Schedule {
      */
     protected String getListKey() {
         return "zhuzhu:list";
+    }
+
+    public void close() {
+        jedisProxy.close();
     }
 }

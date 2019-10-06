@@ -1,5 +1,6 @@
 package com.github.bpazy.zhuzhu;
 
+import com.github.bpazy.zhuzhu.schdule.RedisUniqueSchedule;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ public class GithubZhuzhu {
                 .seeds(Lists.newArrayList("https://github.com/Bpazy/zhuzhu"))
                 .proxy(new HttpHost("127.0.0.1", 8889))
                 .threadNum(5)
+                .schedule(new RedisUniqueSchedule("127.0.0.1", 6379, true))
                 .build()
                 .start(MyWebCrawler.class);
     }
