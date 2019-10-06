@@ -10,6 +10,7 @@ import redis.clients.jedis.JedisPool;
 public class RedisUniqueSchedule implements Schedule {
     private final JedisProxy jedisProxy;
     private static final String VISITED = "1";
+    private final Jedis jedis;
 
     /**
      * @param host    redis server host
@@ -18,6 +19,7 @@ public class RedisUniqueSchedule implements Schedule {
      */
     public RedisUniqueSchedule(String host, int port, boolean clearDB) {
         jedisProxy = new JedisProxy(new JedisPool(host, port));
+        jedis = jedisProxy.getJedis();
         if (clearDB) {
             clearDB();
         }
@@ -25,7 +27,7 @@ public class RedisUniqueSchedule implements Schedule {
 
     @Override
     public String take() {
-        return jedisProxy.getJedis().lpop(getListKey());
+        return jedis.lpop(getListKey());
     }
 
 
@@ -34,15 +36,14 @@ public class RedisUniqueSchedule implements Schedule {
         if (setnx(url)) {
             return;
         }
-        jedisProxy.getJedis().lpush(getListKey(), url);
+        jedis.lpush(getListKey(), url);
     }
 
     private boolean setnx(String url) {
-        return jedisProxy.getJedis().setnx(getKey(url), VISITED) == 0;
+        return jedis.setnx(getKey(url), VISITED) == 0;
     }
 
     public void clearDB() {
-        Jedis jedis = jedisProxy.getJedis();
         jedis.del(getListKey());
         jedis.keys(getKey("*")).forEach(jedis::del);
     }
