@@ -36,7 +36,7 @@ public class CrawlerController implements Crawler {
     private int threadNum;
     @Setter
     @Getter
-    private Schedule schedule;
+    private Schedule schedule; // TODO Separate crawler threads and worker threads
     @Setter
     @Getter
     private HttpHost proxy;
@@ -94,7 +94,10 @@ public class CrawlerController implements Crawler {
                             .peek(u -> log.debug("Will visit {}", u))
                             .forEach(schedule::add);
 
-                    webCrawler.visit(url, contentBytes);
+                    Object ret = webCrawler.visit(url, contentBytes);
+                    if (ret != null) {
+                        webCrawler.handle(ret);
+                    }
                 } catch (IOException e) {
                     log.warn("Can not read {}, {}", httpGet.getURI(), e.getMessage());
                 }

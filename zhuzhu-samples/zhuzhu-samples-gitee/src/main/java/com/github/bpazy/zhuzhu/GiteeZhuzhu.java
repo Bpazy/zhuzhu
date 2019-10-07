@@ -36,7 +36,7 @@ public class GiteeZhuzhu {
     }
 
     @Slf4j
-    public static class MyWebCrawler implements WebCrawler {
+    public static class MyWebCrawler implements WebCrawler<GiteeObject> {
         private static Pattern pattern = Pattern.compile("https://gitee\\.com/(\\w+)/(\\w+)$");
 
         @Override
@@ -46,16 +46,24 @@ public class GiteeZhuzhu {
 
         @Override
         @SneakyThrows
-        public void visit(String url, byte[] content) {
+        public GiteeObject visit(String url, byte[] content) {
             Matcher matcher = pattern.matcher(url);
-            if (!matcher.find()) return;
+            if (!matcher.find()) return null;
 
             Document doc = Jsoup.parse(new String(content));
             Element titleElement = doc.selectFirst("span.project-title > a.repository");
             Element starElement = doc.selectFirst(".star-container > a.ui.button.action-social-count");
-            if (titleElement == null || starElement == null) return;
+            if (titleElement == null || starElement == null) return null;
+            return GiteeObject.builder()
+                    .repo(titleElement.text())
+                    .star(starElement.attr("title"))
+                    .url(url)
+                    .build();
+        }
 
-            log.info("repo: {}, star number: {}, url: {}", titleElement.text(), starElement.attr("title"), url);
+        @Override
+        public void handle(GiteeObject giteeObject) {
+            log.info("repo: {}, star number: {}, url: {}", giteeObject.getRepo(), giteeObject.getStar(), giteeObject.getUrl());
         }
     }
 }

@@ -30,7 +30,13 @@ public class WebCrawlerFactoryTest {
         }
 
         @Override
-        public void visit(String url, byte[] content) {
+        public Object visit(String url, byte[] content) {
+            return null;
+        }
+
+        @Override
+        public void handle(Object o) {
+
         }
     }
 
@@ -47,7 +53,13 @@ public class WebCrawlerFactoryTest {
         }
 
         @Override
-        public void visit(String url, byte[] content) {
+        public Object visit(String url, byte[] content) {
+            return null;
+        }
+
+        @Override
+        public void handle(Object o) {
+
         }
     }
 }

@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
-import org.joor.Reflect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -122,7 +121,13 @@ public class CrawlersTest {
         }
 
         @Override
-        public void visit(String url, byte[] content) {
+        public Object visit(String url, byte[] content) {
+            return null;
+        }
+
+        @Override
+        public void handle(Object o) {
+
         }
     }
 

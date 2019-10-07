@@ -3,7 +3,7 @@ package com.github.bpazy.zhuzhu;
 /**
  * @author ziyuan
  */
-public interface WebCrawler {
+public interface WebCrawler<T> {
     boolean shouldVisit(String url);
 
 
@@ -14,8 +14,7 @@ public interface WebCrawler {
      * @param url
      * @param content
      */
-    void visit(String url, byte[] content);
+    T visit(String url, byte[] content);
 
-    // TODO Maybe pipeline is better.
-    //  shouldVisit -> visit(filter) -> handle(filtered data)
+    void handle(T t);
 }

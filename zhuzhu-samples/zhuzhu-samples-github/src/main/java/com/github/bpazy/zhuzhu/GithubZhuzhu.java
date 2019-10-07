@@ -30,7 +30,7 @@ public class GithubZhuzhu {
     }
 
     @Slf4j
-    public static class MyWebCrawler implements WebCrawler {
+    public static class MyWebCrawler implements WebCrawler<GithubObject> {
         private static Pattern pattern = Pattern.compile("https://github\\.com/(\\w+)/(\\w+)$");
 
         @Override
@@ -40,16 +40,24 @@ public class GithubZhuzhu {
 
         @Override
         @SneakyThrows
-        public void visit(String url, byte[] content) {
+        public GithubObject visit(String url, byte[] content) {
             Matcher matcher = pattern.matcher(url);
-            if (!matcher.find()) return;
+            if (!matcher.find()) return null;
 
             Document doc = Jsoup.parse(new String(content));
             Element titleElement = doc.selectFirst("div > h1 > strong > a");
             Element starElement = doc.selectFirst(".social-count.js-social-count");
-            if (titleElement == null || starElement == null) return;
+            if (titleElement == null || starElement == null) return null;
+            return GithubObject.builder()
+                    .repo(titleElement.text())
+                    .star(starElement.attr("title"))
+                    .url(url)
+                    .build();
+        }
 
-            log.info("repo: {}, star number: {}, url: {}", titleElement.text(), starElement.text(), url);
+        @Override
+        public void handle(GithubObject githubObject) {
+            log.info("repo: {}, star number: {}, url: {}", githubObject.getRepo(), githubObject.getStar(), githubObject.getUrl());
         }
     }
 }
