@@ -1,5 +1,7 @@
-package com.github.bpazy.zhuzhu;
+package com.github.bpazy.zhuzhu.samples.github;
 
+import com.github.bpazy.zhuzhu.Crawlers;
+import com.github.bpazy.zhuzhu.WebCrawler;
 import com.github.bpazy.zhuzhu.schdule.RedisUniqueSchedule;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
@@ -8,7 +10,6 @@ import org.apache.http.HttpHost;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

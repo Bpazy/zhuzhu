@@ -1,4 +1,4 @@
-package com.github.bpazy.zhuzhu;
+package com.github.bpazy.zhuzhu.samples.cnwangku;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +9,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class GiteeObject {
+public class RetObject {
     private String url;
-    private String repo;
-    private String star;
+    private String title;
 }

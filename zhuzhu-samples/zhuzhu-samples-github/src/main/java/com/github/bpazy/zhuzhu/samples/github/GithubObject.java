@@ -1,4 +1,4 @@
-package com.github.bpazy.zhuzhu;
+package com.github.bpazy.zhuzhu.samples.github;
 
 import lombok.Builder;
 import lombok.Data;
