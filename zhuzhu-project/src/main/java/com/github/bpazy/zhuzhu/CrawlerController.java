@@ -19,9 +19,7 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * TODO setSchedule before addSeed. Maybe builder is necessary.
@@ -33,10 +31,13 @@ public class CrawlerController implements Crawler {
 
     @Setter
     @Getter
-    private int threadNum;
+    private int crawlerThreadNum;
     @Setter
     @Getter
-    private Schedule schedule; // TODO Separate crawler threads and worker threads
+    private int handlerThreadNum;
+    @Setter
+    @Getter
+    private Schedule schedule;
     @Setter
     @Getter
     private HttpHost proxy;
@@ -60,14 +61,17 @@ public class CrawlerController implements Crawler {
         log.info("Crawler start");
         init();
 
-        ThreadPoolExecutor executor = getThreadPoolExecutor();
+        ThreadPool threadPool = new ThreadPool(crawlerThreadNum, handlerThreadNum);
+        ThreadPoolExecutor crawlerThreadPoolExecutor = threadPool.getCrawlerThreadPoolExecutor();
+        ThreadPoolExecutor handlerThreadPoolExecutor = threadPool.getHandlerThreadPoolExecutor();
+
         WebCrawler webCrawler = new WebCrawlerFactory(webCrawlerClass).newInstance();
         while (true) {
             // FIXME Control the rate of fetch, otherwise the thread pool queue will keep increasing
             String url = schedule.take();
             if (StringUtils.isBlank(url)) {
                 // exit when schedule is empty and thread poll is empty
-                if (executor.getPoolSize() == 0) {
+                if (crawlerThreadPoolExecutor.getPoolSize() == 0) {
                     break;
                 }
 
@@ -80,7 +84,7 @@ public class CrawlerController implements Crawler {
                 }
                 continue;
             }
-            executor.execute(() -> {
+            crawlerThreadPoolExecutor.execute(() -> {
                 log.debug("Start crawling {}", url);
                 HttpGet httpGet = new HttpGet(url);
                 headers.forEach(httpGet::addHeader);
@@ -96,7 +100,7 @@ public class CrawlerController implements Crawler {
 
                     Object ret = webCrawler.visit(url, contentBytes);
                     if (ret != null) {
-                        webCrawler.handle(ret);
+                        handlerThreadPoolExecutor.execute(() -> webCrawler.handle(ret));
                     }
                 } catch (IOException e) {
                     log.warn("Can not read {}, {}", httpGet.getURI(), e.getMessage());
@@ -104,12 +108,6 @@ public class CrawlerController implements Crawler {
             });
         }
         log.info("Crawler finished");
-    }
-
-    private ThreadPoolExecutor getThreadPoolExecutor() {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(threadNum, threadNum, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-        executor.allowCoreThreadTimeOut(true);
-        return executor;
     }
 
     private void init() {

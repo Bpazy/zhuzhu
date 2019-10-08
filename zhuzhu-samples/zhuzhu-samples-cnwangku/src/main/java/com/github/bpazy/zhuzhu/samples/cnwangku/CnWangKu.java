@@ -22,7 +22,7 @@ public class CnWangKu {
         Crawlers.custom()
                 .schedule(new RedisUniqueSchedule("127.0.0.1", 6379, true))
                 .seeds(Lists.newArrayList("http://shop.99114.com/"))
-                .threadNum(5)
+                .crawlerThreadNum(5)
                 .build()
                 .start(MyWebCrawler.class);
     }

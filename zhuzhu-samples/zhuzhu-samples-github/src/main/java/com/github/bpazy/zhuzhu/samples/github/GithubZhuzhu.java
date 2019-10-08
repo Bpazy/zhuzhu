@@ -24,7 +24,7 @@ public class GithubZhuzhu {
         Crawlers.custom()
                 .seeds(Lists.newArrayList("https://github.com/Bpazy/zhuzhu"))
                 .proxy(new HttpHost("127.0.0.1", 8889))
-                .threadNum(5)
+                .crawlerThreadNum(5)
                 .schedule(new RedisUniqueSchedule("127.0.0.1", 6379, true))
                 .build()
                 .start(MyWebCrawler.class);

@@ -18,7 +18,8 @@ public class CrawlerControllerBuilder {
 
     private List<Header> headers;
     private HttpHost proxy;
-    private int threadNum;
+    private int crawlerThreadNum;
+    private int handlerThreadNum;
     private int timeout;
     private Schedule schedule;
     private List<String> seeds;
@@ -33,8 +34,13 @@ public class CrawlerControllerBuilder {
         return this;
     }
 
-    public CrawlerControllerBuilder threadNum(int threadNum) {
-        this.threadNum = threadNum;
+    public CrawlerControllerBuilder crawlerThreadNum(int crawlerThreadNum) {
+        this.crawlerThreadNum = crawlerThreadNum;
+        return this;
+    }
+
+    public CrawlerControllerBuilder handlerThreadNum(int handlerThreadNum) {
+        this.handlerThreadNum = handlerThreadNum;
         return this;
     }
 
@@ -64,11 +70,16 @@ public class CrawlerControllerBuilder {
         }
         controller.setTimeout(timeout);
         controller.setSchedule(schedule);
-        if (threadNum < DEFAULT_THREAD_NUMBER) {
+        if (crawlerThreadNum < DEFAULT_THREAD_NUMBER) {
             log.warn("Thread number should be a positive integer. The thread number is now set to {}.", DEFAULT_THREAD_NUMBER);
-            threadNum = DEFAULT_THREAD_NUMBER;
+            crawlerThreadNum = DEFAULT_THREAD_NUMBER;
         }
-        controller.setThreadNum(threadNum);
+        if (handlerThreadNum < DEFAULT_THREAD_NUMBER) {
+            log.warn("Thread number should be a positive integer. The thread number is now set to {}.", DEFAULT_THREAD_NUMBER);
+            handlerThreadNum = DEFAULT_THREAD_NUMBER;
+        }
+        controller.setCrawlerThreadNum(crawlerThreadNum);
+        controller.setHandlerThreadNum(handlerThreadNum);
         controller.setProxy(proxy);
         if (seeds != null) {
             seeds.forEach(controller::addSeed);

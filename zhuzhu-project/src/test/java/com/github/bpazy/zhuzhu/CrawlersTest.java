@@ -61,7 +61,7 @@ public class CrawlersTest {
         CrawlerController controller = (CrawlerController) getDefaultTestCrawlerController();
         assertThat(controller.getHeaders()).isEqualTo(testHeaders);
         assertThat(controller.getProxy()).isEqualTo(testProxy);
-        assertThat(controller.getThreadNum()).isEqualTo(testThreadNum);
+        assertThat(controller.getCrawlerThreadNum()).isEqualTo(testThreadNum);
         assertThat(controller.getTimeout()).isEqualTo(testTimeout);
         assertThat(controller.getSchedule()).isEqualTo(testUniqueSchedule);
         assertThat(controller.getSeeds()).isEqualTo(testSeeds);
@@ -74,12 +74,13 @@ public class CrawlersTest {
         CrawlerControllerBuilder builder = Crawlers.custom()
                 .headers(testHeaders)
                 .proxy(testProxy)
-                .threadNum(-1)
+                .crawlerThreadNum(-1)
+                .handlerThreadNum(-1)
                 .timeout(-1)
                 .schedule(testUniqueSchedule)
                 .seeds(testSeeds);
         CrawlerController crawler1 = (CrawlerController) builder.build();
-        assertThat(crawler1.getThreadNum()).isEqualTo(1);
+        assertThat(crawler1.getCrawlerThreadNum()).isEqualTo(1);
         assertThat(crawler1.getTimeout()).isEqualTo(3000);
         assertThat(crawler1.getHeaders()).isEqualTo(testHeaders);
 
@@ -90,15 +91,15 @@ public class CrawlersTest {
         CrawlerController specifiedScheduleCrawler = (CrawlerController) Crawlers.custom().schedule(schedule).build();
         assertThat(specifiedScheduleCrawler.getSchedule()).isInstanceOf(TestSchedule.class);
 
-        CrawlerController crawler2 = (CrawlerController) builder.threadNum(Integer.MAX_VALUE).build();
-        assertThat(crawler2.getThreadNum()).isEqualTo(Integer.MAX_VALUE);
+        CrawlerController crawler2 = (CrawlerController) builder.crawlerThreadNum(Integer.MAX_VALUE).build();
+        assertThat(crawler2.getCrawlerThreadNum()).isEqualTo(Integer.MAX_VALUE);
     }
 
     private Crawler getDefaultTestCrawlerController() {
         return Crawlers.custom()
                 .headers(testHeaders)
                 .proxy(testProxy)
-                .threadNum(testThreadNum)
+                .crawlerThreadNum(testThreadNum)
                 .timeout(testTimeout)
                 .schedule(testUniqueSchedule)
                 .seeds(testSeeds)
