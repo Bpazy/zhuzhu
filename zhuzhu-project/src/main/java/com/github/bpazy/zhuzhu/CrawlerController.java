@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * TODO setSchedule before addSeed. Maybe builder is necessary.
- *
  * @author ziyuan
  */
 @Slf4j
