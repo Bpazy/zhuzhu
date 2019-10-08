@@ -1,9 +1,6 @@
 package com.github.bpazy.zhuzhu;
 
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -23,7 +20,8 @@ public class ThreadPool {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 crawlerThreadNum, crawlerThreadNum,
                 10, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(), new DefaultThreadFactory("crawler", "thread"));
+                new SynchronousQueue<>(true), new DefaultThreadFactory("crawler", "thread"),
+                new BlockingPolicy());
         executor.allowCoreThreadTimeOut(true);
         return executor;
     }
@@ -32,9 +30,27 @@ public class ThreadPool {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 handlerThreadNum, handlerThreadNum,
                 10, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(), new DefaultThreadFactory("handler", "thread"));
+                new SynchronousQueue<>(true), new DefaultThreadFactory("handler", "thread"),
+                new BlockingPolicy());
         executor.allowCoreThreadTimeOut(true);
         return executor;
+    }
+
+    /**
+     * Block when thread pool work queue is full.
+     * Usually used with SynchronousQueue.
+     *
+     * @see SynchronousQueue
+     */
+    static class BlockingPolicy implements RejectedExecutionHandler {
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            try {
+                executor.getQueue().put(r);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /**
