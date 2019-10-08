@@ -57,7 +57,6 @@ public class ThreadPool {
      * The default thread factory
      */
     static class DefaultThreadFactory implements ThreadFactory {
-        private static final AtomicInteger poolNumber = new AtomicInteger(1);
         private final ThreadGroup group;
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private final String namePrefix;
@@ -65,7 +64,7 @@ public class ThreadPool {
         DefaultThreadFactory(String poolNamePrefix, String threadNamePrefix) {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            namePrefix = poolNamePrefix + "-" + poolNumber.getAndIncrement() + "-" + threadNamePrefix + "-";
+            namePrefix = poolNamePrefix + "-" + threadNamePrefix + "-";
         }
 
         public Thread newThread(Runnable r) {
