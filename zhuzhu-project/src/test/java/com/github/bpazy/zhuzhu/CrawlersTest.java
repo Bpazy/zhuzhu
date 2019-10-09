@@ -1,18 +1,22 @@
 package com.github.bpazy.zhuzhu;
 
+import com.github.bpazy.zhuzhu.http.*;
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
-import org.apache.http.message.BasicHeader;
+import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author ziyuan
@@ -20,31 +24,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Slf4j
 public class CrawlersTest {
-    private static final Object lock = new Object();
-    private static volatile int flag = 0;
     private List<Header> testHeaders;
     private List<String> testSeeds;
     private HttpHost testProxy;
     private int testThreadNum;
     private int testTimeout;
     private UniqueSchedule testUniqueSchedule;
-
-    // FIXME Broken CI
-    //    @Test
-    public void test() throws InterruptedException {
-        new Thread(() -> getDefaultTestCrawlerController().start(TestWebCrawler.class)).start();
-
-        synchronized (lock) {
-            long start = System.currentTimeMillis();
-            while (flag == 0) {
-                int timeout = 5000;
-                lock.wait(timeout);
-                if (System.currentTimeMillis() - start > timeout) {
-                    throw new RuntimeException("Crawler test failed. Maybe request to github.com timeout or program error");
-                }
-            }
-        }
-    }
 
     @BeforeEach
     void setUp() {
@@ -57,12 +42,32 @@ public class CrawlersTest {
     }
 
     @Test
+    public void overall() throws IOException {
+        RequestConfig config = RequestConfig.builder().setTimeout(100).build();
+        HttpClient mockHttpClient = mock(HttpClient.class);
+        String web0Url = "https://github.com/Bpazy/zhuzhu/web0";
+        String web0Content = "<a href=\"https://github.com/Bpazy/zhuzhu/web1\">web1</a>";
+        String web1Url = "https://github.com/Bpazy/zhuzhu/web1";
+        String web1Title = "web1 title";
+        String web1Content = "<title>" + web1Title + "</title>";
+        when(mockHttpClient.get(web0Url, config)).thenReturn(web0Content.getBytes());
+        when(mockHttpClient.get(web1Url, config)).thenReturn(web1Content.getBytes());
+
+        Crawlers.custom()
+                .httpClient(mockHttpClient)
+                .requestConfig(config)
+                .seeds(Lists.newArrayList(web0Url))
+                .build()
+                .start(TestWebCrawler.class);
+
+        assertThat(TestWebCrawler.byteArrayOutputStream.toString()).isEqualTo(web1Title);
+    }
+
+    @Test
     public void buildCrawlerControllerTest() {
         CrawlerController controller = (CrawlerController) getDefaultTestCrawlerController();
         assertThat(controller.getHeaders()).isEqualTo(testHeaders);
-        assertThat(controller.getProxy()).isEqualTo(testProxy);
         assertThat(controller.getCrawlerThreadNum()).isEqualTo(testThreadNum);
-        assertThat(controller.getTimeout()).isEqualTo(testTimeout);
         assertThat(controller.getSchedule()).isEqualTo(testUniqueSchedule);
         assertThat(controller.getSeeds()).isEqualTo(testSeeds);
     }
@@ -73,15 +78,16 @@ public class CrawlersTest {
         List<Header> testHeaders = Lists.newArrayList(new BasicHeader("name", "value"));
         CrawlerControllerBuilder builder = Crawlers.custom()
                 .headers(testHeaders)
-                .proxy(testProxy)
+                .requestConfig(RequestConfig.builder()
+                        .setProxy(testProxy)
+                        .setTimeout(-1)
+                        .build())
                 .crawlerThreadNum(-1)
                 .handlerThreadNum(-1)
-                .timeout(-1)
                 .schedule(testUniqueSchedule)
                 .seeds(testSeeds);
         CrawlerController crawler1 = (CrawlerController) builder.build();
         assertThat(crawler1.getCrawlerThreadNum()).isEqualTo(1);
-        assertThat(crawler1.getTimeout()).isEqualTo(3000);
         assertThat(crawler1.getHeaders()).isEqualTo(testHeaders);
 
         CrawlerController defaultScheduleCrawler = (CrawlerController) Crawlers.custom().seeds(Lists.newArrayList("https://github.com")).build();
@@ -98,37 +104,41 @@ public class CrawlersTest {
     private Crawler getDefaultTestCrawlerController() {
         return Crawlers.custom()
                 .headers(testHeaders)
-                .proxy(testProxy)
+                .requestConfig(RequestConfig.builder()
+                        .setProxy(testProxy)
+                        .setTimeout(testTimeout)
+                        .build())
                 .crawlerThreadNum(testThreadNum)
-                .timeout(testTimeout)
                 .schedule(testUniqueSchedule)
                 .seeds(testSeeds)
                 .build();
     }
 
     @Slf4j
-    public static class TestWebCrawler implements WebCrawler {
+    public static class TestWebCrawler implements WebCrawler<String> {
+        static ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         @Override
         public boolean shouldVisit(String url) {
-            boolean equals = "https://github.com/Bpazy/zhuzhu/blob/master/README.md".equals(url);
-            if (equals) {
-                synchronized (lock) {
-                    lock.notifyAll();
-                    flag = 1;
-                }
-            }
-            return equals;
+            return true;
         }
 
         @Override
-        public Object visit(String url, byte[] content) {
+        public String visit(String url, byte[] content) {
+            String title = Jsoup.parse(new String(content)).title();
+            if (StringUtils.isNotEmpty(title)) {
+                return title;
+            }
             return null;
         }
 
         @Override
-        public void handle(Object o) {
-
+        public void handle(String o) {
+            try {
+                byteArrayOutputStream.write(o.getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

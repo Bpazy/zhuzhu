@@ -1,5 +1,8 @@
 package com.github.bpazy.zhuzhu;
 
+import com.github.bpazy.zhuzhu.http.Header;
+import com.github.bpazy.zhuzhu.http.HttpClient;
+import com.github.bpazy.zhuzhu.http.RequestConfig;
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import com.google.common.collect.Lists;
@@ -7,15 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,21 +32,13 @@ public class CrawlerController implements Crawler {
     private Schedule schedule;
     @Setter
     @Getter
-    private HttpHost proxy;
-    @Setter
-    @Getter
-    private int timeout;
-    @Setter
-    @Getter
     private List<Header> headers = Lists.newArrayList();
     @Getter
     private List<String> seeds = Lists.newArrayList();
-
-    private CloseableHttpClient client = HttpClients.createDefault();
+    @Setter
     private RequestConfig requestConfig;
-
-    public CrawlerController() {
-    }
+    @Setter
+    private HttpClient httpClient;
 
     @Override
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
@@ -74,7 +60,7 @@ public class CrawlerController implements Crawler {
 
                 try {
                     // TODO schedule.wait()
-                    Thread.sleep(timeout);
+                    Thread.sleep(requestConfig.getTimeout());
                 } catch (InterruptedException e) {
                     log.error("", e);
                     break;
@@ -83,24 +69,24 @@ public class CrawlerController implements Crawler {
             }
             crawlerThreadPoolExecutor.execute(() -> {
                 log.debug("Start crawling {}", url);
-                HttpGet httpGet = new HttpGet(url);
-                headers.forEach(httpGet::addHeader);
-                httpGet.setConfig(requestConfig);
-                try (CloseableHttpResponse response = client.execute(httpGet)) {
-                    byte[] contentBytes = EntityUtils.toByteArray(response.getEntity());
+                try {
+                    byte[] contentBytes = httpClient.get(url, requestConfig);
+                    if (contentBytes == null) {
+                        log.warn("skip {} because content bytes is null", url);
+                        return;
+                    }
                     List<String> urls = Utils.extractUrls(url, contentBytes, "UTF8");
                     urls.stream()
                             .map(String::trim)
                             .filter(webCrawler::shouldVisit)
                             .peek(u -> log.debug("Will visit {}", u))
                             .forEach(schedule::add);
-
                     Object ret = webCrawler.visit(url, contentBytes);
                     if (ret != null) {
                         handlerThreadPoolExecutor.execute(() -> webCrawler.handle(ret));
                     }
                 } catch (IOException e) {
-                    log.warn("Can not read {}, {}", httpGet.getURI(), e.getMessage());
+                    log.warn("Can not read {}, {}", url, e.getMessage());
                 }
             });
         }
@@ -108,17 +94,6 @@ public class CrawlerController implements Crawler {
     }
 
     private void init() {
-        // 初始化requestConfig
-        RequestConfig.Builder builder = RequestConfig.custom()
-                .setCookieSpec(CookieSpecs.STANDARD)
-                .setConnectTimeout(timeout)
-                .setConnectionRequestTimeout(timeout)
-                .setSocketTimeout(timeout);
-        if (proxy != null) {
-            builder.setProxy(proxy);
-        }
-        requestConfig = builder.build();
-
         ensureSchedule();
     }
 

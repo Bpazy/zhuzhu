@@ -2,11 +2,11 @@ package com.github.bpazy.zhuzhu.samples.github;
 
 import com.github.bpazy.zhuzhu.Crawlers;
 import com.github.bpazy.zhuzhu.WebCrawler;
+import com.github.bpazy.zhuzhu.http.HttpHost;
 import com.github.bpazy.zhuzhu.schdule.RedisUniqueSchedule;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHost;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

@@ -1,9 +1,11 @@
 package com.github.bpazy.zhuzhu;
 
+import com.github.bpazy.zhuzhu.http.DefaultHttpClient;
+import com.github.bpazy.zhuzhu.http.Header;
+import com.github.bpazy.zhuzhu.http.HttpClient;
+import com.github.bpazy.zhuzhu.http.RequestConfig;
 import com.github.bpazy.zhuzhu.schdule.Schedule;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
 
 import java.util.List;
 
@@ -14,23 +16,17 @@ import java.util.List;
 @Slf4j
 public class CrawlerControllerBuilder {
     private static final int DEFAULT_THREAD_NUMBER = 1;
-    private static final int REQUEST_TIMEOUT = 3000;
 
     private List<Header> headers;
-    private HttpHost proxy;
     private int crawlerThreadNum;
     private int handlerThreadNum;
-    private int timeout;
     private Schedule schedule;
     private List<String> seeds;
+    private HttpClient httpClient;
+    private RequestConfig requestConfig;
 
     public CrawlerControllerBuilder headers(List<Header> headers) {
         this.headers = headers;
-        return this;
-    }
-
-    public CrawlerControllerBuilder proxy(HttpHost proxy) {
-        this.proxy = proxy;
         return this;
     }
 
@@ -44,11 +40,6 @@ public class CrawlerControllerBuilder {
         return this;
     }
 
-    public CrawlerControllerBuilder timeout(int timeout) {
-        this.timeout = timeout;
-        return this;
-    }
-
     public CrawlerControllerBuilder schedule(Schedule schedule) {
         this.schedule = schedule;
         return this;
@@ -59,16 +50,28 @@ public class CrawlerControllerBuilder {
         return this;
     }
 
+    public CrawlerControllerBuilder httpClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
+        return this;
+    }
+
+    public CrawlerControllerBuilder requestConfig(RequestConfig requestConfig) {
+        this.requestConfig = requestConfig;
+        return this;
+    }
+
     public Crawler build() {
         CrawlerController controller = new CrawlerController();
+        ;
+        if (httpClient == null) {
+            controller.setHttpClient(new DefaultHttpClient());
+        } else {
+            controller.setHttpClient(httpClient);
+        }
+
         if (headers != null) {
             controller.getHeaders().addAll(headers);
         }
-        if (timeout <= 0) {
-            log.warn("timeout should be greater than 0. The timeout is now set to {}ms.", REQUEST_TIMEOUT);
-            timeout = REQUEST_TIMEOUT;
-        }
-        controller.setTimeout(timeout);
         controller.setSchedule(schedule);
         if (crawlerThreadNum < DEFAULT_THREAD_NUMBER) {
             log.warn("Thread number should be a positive integer. The thread number is now set to {}.", DEFAULT_THREAD_NUMBER);
@@ -80,7 +83,12 @@ public class CrawlerControllerBuilder {
         }
         controller.setCrawlerThreadNum(crawlerThreadNum);
         controller.setHandlerThreadNum(handlerThreadNum);
-        controller.setProxy(proxy);
+        if (requestConfig != null) {
+            controller.setRequestConfig(requestConfig);
+        } else {
+            controller.setRequestConfig(RequestConfig.builder().build());
+        }
+
         if (seeds != null) {
             seeds.forEach(controller::addSeed);
         }
