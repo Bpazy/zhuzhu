@@ -34,7 +34,7 @@ public class CrawlersTest {
     @BeforeEach
     void setUp() {
         testHeaders = Lists.newArrayList(new BasicHeader("name", "value"));
-        testSeeds = Lists.newArrayList("https://github.com/Bpazy/zhuzhu"); // TODO maybe test http server is better
+        testSeeds = Lists.newArrayList("https://github.com/Bpazy/zhuzhu");
         testProxy = new HttpHost("127.0.0.1", 8889);
         testThreadNum = 5;
         testTimeout = 3000;
