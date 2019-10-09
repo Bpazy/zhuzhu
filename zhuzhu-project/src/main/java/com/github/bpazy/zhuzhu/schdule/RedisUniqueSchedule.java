@@ -6,11 +6,12 @@ import redis.clients.jedis.JedisPool;
 
 /**
  * TODO unique flag used to distinguish between different domain names
+ *
  * @author ziyuan
  */
 public class RedisUniqueSchedule implements Schedule {
-    private final JedisProxy jedisProxy;
     private static final String VISITED = "1";
+    private final JedisProxy jedisProxy;
     private final Jedis jedis;
 
     /**

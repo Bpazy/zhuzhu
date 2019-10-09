@@ -33,10 +33,10 @@ public class ThreadPool {
     public synchronized ThreadPoolExecutor getHandlerThreadPoolExecutor() {
         if (handlerExecutor == null) {
             handlerExecutor = new ThreadPoolExecutor(
-                handlerThreadNum, handlerThreadNum,
-                10, TimeUnit.SECONDS,
-                new SynchronousQueue<>(true), new DefaultThreadFactory("handler", "thread"),
-                new BlockingPolicy());
+                    handlerThreadNum, handlerThreadNum,
+                    10, TimeUnit.SECONDS,
+                    new SynchronousQueue<>(true), new DefaultThreadFactory("handler", "thread"),
+                    new BlockingPolicy());
             handlerExecutor.allowCoreThreadTimeOut(true);
         }
         return handlerExecutor;
