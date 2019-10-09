@@ -48,26 +48,25 @@ public class CrawlerController implements Crawler {
         ThreadPool threadPool = new ThreadPool(crawlerThreadNum, handlerThreadNum);
         ThreadPoolExecutor crawlerThreadPoolExecutor = threadPool.getCrawlerThreadPoolExecutor();
         ThreadPoolExecutor handlerThreadPoolExecutor = threadPool.getHandlerThreadPoolExecutor();
-
         WebCrawler webCrawler = new WebCrawlerFactory(webCrawlerClass).newInstance();
+
         while (true) {
             String url = schedule.take();
             if (StringUtils.isBlank(url)) {
                 // exit when schedule is empty and thread poll is empty
-                if (crawlerThreadPoolExecutor.getPoolSize() == 0) {
+                if (Monitors.activeSize() == 0 && schedule.size() == 0) {
                     break;
                 }
 
                 try {
-                    // TODO schedule.wait()
-                    Thread.sleep(requestConfig.getTimeout());
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     log.error("", e);
                     break;
                 }
                 continue;
             }
-            crawlerThreadPoolExecutor.execute(() -> {
+            crawlerThreadPoolExecutor.execute(Monitors.getRunnable(() -> {
                 log.debug("Start crawling {}", url);
                 try {
                     byte[] contentBytes = httpClient.get(url, requestConfig);
@@ -83,12 +82,12 @@ public class CrawlerController implements Crawler {
                             .forEach(schedule::add);
                     Object ret = webCrawler.visit(url, contentBytes);
                     if (ret != null) {
-                        handlerThreadPoolExecutor.execute(() -> webCrawler.handle(ret));
+                        handlerThreadPoolExecutor.execute(Monitors.getRunnable(() -> webCrawler.handle(ret)));
                     }
                 } catch (IOException e) {
                     log.warn("Can not read {}, {}", url, e.getMessage());
                 }
-            });
+            }));
         }
         log.info("Crawler finished");
     }

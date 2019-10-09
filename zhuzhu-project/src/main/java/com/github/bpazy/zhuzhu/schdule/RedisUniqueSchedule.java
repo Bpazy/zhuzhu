@@ -5,6 +5,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 /**
+ * TODO unique flag used to distinguish between different domain names
  * @author ziyuan
  */
 public class RedisUniqueSchedule implements Schedule {
@@ -37,6 +38,11 @@ public class RedisUniqueSchedule implements Schedule {
             return;
         }
         jedis.lpush(getListKey(), url);
+    }
+
+    @Override
+    public long size() {
+        return jedis.llen(getListKey());
     }
 
     private boolean setnx(String url) {

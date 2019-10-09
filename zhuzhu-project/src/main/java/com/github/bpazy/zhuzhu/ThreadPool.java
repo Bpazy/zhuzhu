@@ -10,30 +10,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ThreadPool {
     private int crawlerThreadNum;
     private int handlerThreadNum;
+    private ThreadPoolExecutor crawlerExecutor;
+    private ThreadPoolExecutor handlerExecutor;
 
     public ThreadPool(int crawlerThreadNum, int handlerThreadNum) {
         this.crawlerThreadNum = crawlerThreadNum;
         this.handlerThreadNum = handlerThreadNum;
     }
 
-    public ThreadPoolExecutor getCrawlerThreadPoolExecutor() {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                crawlerThreadNum, crawlerThreadNum,
-                10, TimeUnit.SECONDS,
-                new SynchronousQueue<>(true), new DefaultThreadFactory("crawler", "thread"),
-                new BlockingPolicy());
-        executor.allowCoreThreadTimeOut(true);
-        return executor;
+    public synchronized ThreadPoolExecutor getCrawlerThreadPoolExecutor() {
+        if (crawlerExecutor == null) {
+            crawlerExecutor = new ThreadPoolExecutor(
+                    crawlerThreadNum, crawlerThreadNum,
+                    10, TimeUnit.SECONDS,
+                    new SynchronousQueue<>(true), new DefaultThreadFactory("crawler", "thread"),
+                    new BlockingPolicy());
+            crawlerExecutor.allowCoreThreadTimeOut(true);
+        }
+        return crawlerExecutor;
     }
 
-    public ThreadPoolExecutor getHandlerThreadPoolExecutor() {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+    public synchronized ThreadPoolExecutor getHandlerThreadPoolExecutor() {
+        if (handlerExecutor == null) {
+            handlerExecutor = new ThreadPoolExecutor(
                 handlerThreadNum, handlerThreadNum,
                 10, TimeUnit.SECONDS,
                 new SynchronousQueue<>(true), new DefaultThreadFactory("handler", "thread"),
                 new BlockingPolicy());
-        executor.allowCoreThreadTimeOut(true);
-        return executor;
+            handlerExecutor.allowCoreThreadTimeOut(true);
+        }
+        return handlerExecutor;
     }
 
     /**

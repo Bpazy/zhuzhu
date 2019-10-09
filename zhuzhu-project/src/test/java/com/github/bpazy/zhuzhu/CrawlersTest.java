@@ -45,27 +45,41 @@ public class CrawlersTest {
     public void overall() throws IOException {
         RequestConfig config = RequestConfig.builder().setTimeout(100).build();
         HttpClient mockHttpClient = mock(HttpClient.class);
-        String web0Url = "https://github.com/Bpazy/zhuzhu/web0";
-        String web0Content = "<a href=\"https://github.com/Bpazy/zhuzhu/web1\">web1</a>";
-        String web1Url = "https://github.com/Bpazy/zhuzhu/web1";
-        String web1Title = "web1 title";
-        String web1Content = "<title>" + web1Title + "</title>";
-        when(mockHttpClient.get(web0Url, config)).thenReturn(web0Content.getBytes());
-        when(mockHttpClient.get(web1Url, config)).thenReturn(web1Content.getBytes());
+
+        String baseUrl = "https://github.com/Bpazy/zhuzhu/web{no}";
+        String baseContent = "<title>title{titleNo}</title><a href=\"https://github.com/Bpazy/zhuzhu/web{no}\">url</a>";
+        StringBuilder expectedTitle = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            String currentUrl = baseUrl.replaceAll("\\{no}", i + "");
+            String currentContent = baseContent.replaceAll("\\{titleNo}", i + "")
+                    .replaceAll("\\{no}", i + 1 + "");
+            when(mockHttpClient.get(currentUrl, config)).thenReturn(currentContent.getBytes());
+            expectedTitle.append("title").append(i);
+        }
 
         Crawlers.custom()
                 .httpClient(mockHttpClient)
                 .requestConfig(config)
-                .seeds(Lists.newArrayList(web0Url))
+                .seeds(Lists.newArrayList(baseUrl.replaceAll("\\{no}", 0 + "")))
                 .build()
                 .start(TestWebCrawler.class);
 
-        assertThat(TestWebCrawler.byteArrayOutputStream.toString()).isEqualTo(web1Title);
+        assertThat(TestWebCrawler.byteArrayOutputStream.toString()).isEqualTo(expectedTitle.toString());
     }
 
     @Test
     public void buildCrawlerControllerTest() {
-        CrawlerController controller = (CrawlerController) getDefaultTestCrawlerController();
+        CrawlerController controller = (CrawlerController) Crawlers.custom()
+                .headers(testHeaders)
+                .requestConfig(RequestConfig.builder()
+                        .setProxy(testProxy)
+                        .setTimeout(testTimeout)
+                        .build())
+                .crawlerThreadNum(testThreadNum)
+                .schedule(testUniqueSchedule)
+                .seeds(testSeeds)
+                .build();
+
         assertThat(controller.getHeaders()).isEqualTo(testHeaders);
         assertThat(controller.getCrawlerThreadNum()).isEqualTo(testThreadNum);
         assertThat(controller.getSchedule()).isEqualTo(testUniqueSchedule);
@@ -99,19 +113,6 @@ public class CrawlersTest {
 
         CrawlerController crawler2 = (CrawlerController) builder.crawlerThreadNum(Integer.MAX_VALUE).build();
         assertThat(crawler2.getCrawlerThreadNum()).isEqualTo(Integer.MAX_VALUE);
-    }
-
-    private Crawler getDefaultTestCrawlerController() {
-        return Crawlers.custom()
-                .headers(testHeaders)
-                .requestConfig(RequestConfig.builder()
-                        .setProxy(testProxy)
-                        .setTimeout(testTimeout)
-                        .build())
-                .crawlerThreadNum(testThreadNum)
-                .schedule(testUniqueSchedule)
-                .seeds(testSeeds)
-                .build();
     }
 
     @Slf4j
@@ -151,6 +152,11 @@ public class CrawlersTest {
         @Override
         public void add(String url) {
 
+        }
+
+        @Override
+        public long size() {
+            return 0;
         }
     }
 }

@@ -43,4 +43,9 @@ public class UniqueSchedule implements Schedule {
             lock.unlock();
         }
     }
+
+    @Override
+    public long size() {
+        return seeds.size();
+    }
 }

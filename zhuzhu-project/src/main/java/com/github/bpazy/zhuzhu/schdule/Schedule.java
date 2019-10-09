@@ -18,4 +18,9 @@ public interface Schedule {
      * @param url the url you want add to schedule
      */
     void add(String url);
+
+    /**
+     * return size
+     */
+    long size();
 }
