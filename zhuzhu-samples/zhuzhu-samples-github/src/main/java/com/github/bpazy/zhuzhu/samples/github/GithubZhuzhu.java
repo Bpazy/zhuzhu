@@ -3,6 +3,7 @@ package com.github.bpazy.zhuzhu.samples.github;
 import com.github.bpazy.zhuzhu.Crawlers;
 import com.github.bpazy.zhuzhu.WebCrawler;
 import com.github.bpazy.zhuzhu.http.HttpHost;
+import com.github.bpazy.zhuzhu.http.RequestConfig;
 import com.github.bpazy.zhuzhu.schdule.RedisUniqueSchedule;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
@@ -23,7 +24,7 @@ public class GithubZhuzhu {
     public static void main(String[] args) {
         Crawlers.custom()
                 .seeds(Lists.newArrayList("https://github.com/Bpazy/zhuzhu"))
-                .proxy(new HttpHost("127.0.0.1", 8889))
+                .requestConfig(RequestConfig.builder().setProxy(new HttpHost("127.0.0.1", 8889)).build())
                 .crawlerThreadNum(5)
                 .schedule(new RedisUniqueSchedule("127.0.0.1", 6379, true))
                 .build()
@@ -51,7 +52,7 @@ public class GithubZhuzhu {
             if (titleElement == null || starElement == null) return null;
             return GithubObject.builder()
                     .repo(titleElement.text())
-                    .star(starElement.attr("title"))
+                    .star(starElement.text())
                     .url(url)
                     .build();
         }
