@@ -20,10 +20,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{matrix.java}}
-      - name: Run test
-        run: mvn test
       - name: Build with Maven
-        run: mvn package -Dmaven.test.skip=true
+        run: mvn package
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1.0.2
         with:
