@@ -9,12 +9,12 @@
     <packaging>pom</packaging>
     <version>${reversion}</version>
     <modules>
-        <module>zhuzhu-project</module>
+        <module>zhuzhu</module>
         <module>zhuzhu-samples</module>
     </modules>
 
     <properties>
-        <reversion>1.0.1-SNAPSHOT</reversion>
+        <reversion>1.1.0</reversion>
     </properties>
 
     <licenses>
