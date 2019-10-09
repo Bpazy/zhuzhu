@@ -155,6 +155,11 @@ public class CrawlersTest {
         }
 
         @Override
+        public void markHandled(String url) {
+
+        }
+
+        @Override
         public long size() {
             return 0;
         }

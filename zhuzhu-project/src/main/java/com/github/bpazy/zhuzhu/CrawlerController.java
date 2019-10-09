@@ -80,6 +80,7 @@ public class CrawlerController implements Crawler {
                             .filter(webCrawler::shouldVisit)
                             .peek(u -> log.debug("Will visit {}", u))
                             .forEach(schedule::add);
+                    schedule.markHandled(url);
                     Object ret = webCrawler.visit(url, contentBytes);
                     if (ret != null) {
                         handlerThreadPoolExecutor.execute(Monitors.getRunnable(() -> webCrawler.handle(ret)));

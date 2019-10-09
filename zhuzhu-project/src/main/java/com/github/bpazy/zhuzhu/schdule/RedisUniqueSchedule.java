@@ -8,6 +8,7 @@ import redis.clients.jedis.JedisPool;
  * @author ziyuan
  */
 public class RedisUniqueSchedule implements Schedule {
+    private static final String NOT_VISITED = "0";
     private static final String VISITED = "1";
     private final JedisProxy jedisProxy;
     private final Jedis jedis;
@@ -45,19 +46,20 @@ public class RedisUniqueSchedule implements Schedule {
 
     @Override
     public void add(String url) {
-        if (setnx(url)) {
+        if (jedis.setnx(getKey(url), NOT_VISITED) == 0) {
             return;
         }
         jedis.lpush(getListKey(), url);
     }
 
     @Override
-    public long size() {
-        return jedis.llen(getListKey());
+    public void markHandled(String url) {
+        jedis.set(getKey(url), VISITED);
     }
 
-    private boolean setnx(String url) {
-        return jedis.setnx(getKey(url), VISITED) == 0;
+    @Override
+    public long size() {
+        return jedis.llen(getListKey());
     }
 
     public void clearDB() {

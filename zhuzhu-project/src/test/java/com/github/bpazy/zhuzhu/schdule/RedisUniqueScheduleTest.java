@@ -32,13 +32,10 @@ class RedisUniqueScheduleTest {
     }
 
     @Test
-    void take() {
+    void test() {
         schedule.add(testUrl);
         assertThat(schedule.take()).isEqualTo(testUrl);
-    }
-
-    @Test
-    void add() {
-        schedule.add(testUrl);
+        schedule.markHandled(testUrl);
+        assertThat(schedule.size()).isEqualTo(0);
     }
 }

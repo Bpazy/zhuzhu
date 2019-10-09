@@ -1,8 +1,6 @@
 package com.github.bpazy.zhuzhu.schdule;
 
 /**
- * TODO a method to mark loaded
- *
  * @author ziyuan
  */
 public interface Schedule {
@@ -19,6 +17,13 @@ public interface Schedule {
      * @param url the url you want add to schedule
      */
     void add(String url);
+
+    /**
+     * mark url as handled
+     *
+     * @param url the url you want to marked as handled
+     */
+    void markHandled(String url);
 
     /**
      * return size

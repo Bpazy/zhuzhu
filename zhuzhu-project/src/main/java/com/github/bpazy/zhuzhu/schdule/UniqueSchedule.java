@@ -45,6 +45,11 @@ public class UniqueSchedule implements Schedule {
     }
 
     @Override
+    public void markHandled(String url) {
+
+    }
+
+    @Override
     public long size() {
         return seeds.size();
     }
