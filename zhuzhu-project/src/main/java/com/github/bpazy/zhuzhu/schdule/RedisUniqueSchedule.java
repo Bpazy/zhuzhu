@@ -5,14 +5,13 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 /**
- * TODO unique flag used to distinguish between different domain names
- *
  * @author ziyuan
  */
 public class RedisUniqueSchedule implements Schedule {
     private static final String VISITED = "1";
     private final JedisProxy jedisProxy;
     private final Jedis jedis;
+    private String flag;
 
     /**
      * @param host    redis server host
@@ -20,6 +19,17 @@ public class RedisUniqueSchedule implements Schedule {
      * @param clearDB whether of not flushDB when crawler start
      */
     public RedisUniqueSchedule(String host, int port, boolean clearDB) {
+        this("default", host, port, clearDB);
+    }
+
+    /**
+     * @param flag    used to distinguish between different domain names
+     * @param host    redis server host
+     * @param port    redis server port
+     * @param clearDB whether of not flushDB when crawler start
+     */
+    public RedisUniqueSchedule(String flag, String host, int port, boolean clearDB) {
+        this.flag = flag;
         jedisProxy = new JedisProxy(new JedisPool(host, port));
         jedis = jedisProxy.getJedis();
         if (clearDB) {
@@ -59,14 +69,14 @@ public class RedisUniqueSchedule implements Schedule {
      * visited url key prefix
      */
     protected String getKey(String url) {
-        return "zhuzhu:" + url;
+        return "zhuzhu:" + flag + url;
     }
 
     /**
      * pending list prefix
      */
     protected String getListKey() {
-        return "zhuzhu:list";
+        return "zhuzhu:" + flag + ":list";
     }
 
     public void close() {
