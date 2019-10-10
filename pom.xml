@@ -7,15 +7,11 @@
     <groupId>com.github.bpazy</groupId>
     <artifactId>zhuzhu-build</artifactId>
     <packaging>pom</packaging>
-    <version>${reversion}</version>
+    <version>1.1.2</version>
     <modules>
         <module>zhuzhu</module>
         <module>zhuzhu-samples</module>
     </modules>
-
-    <properties>
-        <reversion>1.1.0</reversion>
-    </properties>
 
     <licenses>
         <license>
