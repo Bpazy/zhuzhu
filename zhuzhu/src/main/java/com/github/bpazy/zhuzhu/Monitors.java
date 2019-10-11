@@ -14,8 +14,11 @@ public class Monitors {
     public static Runnable getRunnable(Runnable task) {
         activeTasks.add(task);
         return () -> {
-            task.run();
-            activeTasks.remove(task);
+            try {
+                task.run();
+            } finally {
+                activeTasks.remove(task);
+            }
         };
     }
 
