@@ -5,6 +5,7 @@ import com.github.bpazy.zhuzhu.http.Header;
 import com.github.bpazy.zhuzhu.http.HttpClient;
 import com.github.bpazy.zhuzhu.http.RequestConfig;
 import com.github.bpazy.zhuzhu.schdule.Schedule;
+import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -62,17 +63,15 @@ public class CrawlerControllerBuilder {
 
     public Crawler build() {
         CrawlerController controller = new CrawlerController();
-        ;
+
         if (httpClient == null) {
-            controller.setHttpClient(new DefaultHttpClient());
-        } else {
-            controller.setHttpClient(httpClient);
+            httpClient = new DefaultHttpClient();
         }
+        controller.setHttpClient(httpClient);
 
         if (headers != null) {
             controller.getHeaders().addAll(headers);
         }
-        controller.setSchedule(schedule);
         if (crawlerThreadNum < DEFAULT_THREAD_NUMBER) {
             log.warn("Thread number should be a positive integer. The thread number is now set to {}.", DEFAULT_THREAD_NUMBER);
             crawlerThreadNum = DEFAULT_THREAD_NUMBER;
@@ -89,6 +88,10 @@ public class CrawlerControllerBuilder {
             controller.setRequestConfig(RequestConfig.builder().build());
         }
 
+        if (schedule == null) {
+            schedule = new UniqueSchedule();
+        }
+        controller.setSchedule(schedule);
         if (seeds != null) {
             seeds.forEach(controller::addSeed);
         }

@@ -104,9 +104,6 @@ public class CrawlersTest {
         assertThat(crawler1.getCrawlerThreadNum()).isEqualTo(1);
         assertThat(crawler1.getHeaders()).isEqualTo(testHeaders);
 
-        CrawlerController defaultScheduleCrawler = (CrawlerController) Crawlers.custom().seeds(Lists.newArrayList("https://github.com")).build();
-        assertThat(defaultScheduleCrawler.getSchedule()).isInstanceOf(UniqueSchedule.class);
-
         Schedule schedule = new TestSchedule();
         CrawlerController specifiedScheduleCrawler = (CrawlerController) Crawlers.custom().schedule(schedule).build();
         assertThat(specifiedScheduleCrawler.getSchedule()).isInstanceOf(TestSchedule.class);

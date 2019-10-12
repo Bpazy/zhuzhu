@@ -4,7 +4,6 @@ import com.github.bpazy.zhuzhu.http.Header;
 import com.github.bpazy.zhuzhu.http.HttpClient;
 import com.github.bpazy.zhuzhu.http.RequestConfig;
 import com.github.bpazy.zhuzhu.schdule.Schedule;
-import com.github.bpazy.zhuzhu.schdule.UniqueSchedule;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,7 +42,6 @@ public class CrawlerController implements Crawler {
     @Override
     public void start(Class<? extends WebCrawler> webCrawlerClass) {
         log.info("Crawler start");
-        init();
 
         ThreadPool threadPool = new ThreadPool(crawlerThreadNum, handlerThreadNum);
         ThreadPoolExecutor crawlerThreadPoolExecutor = threadPool.getCrawlerThreadPoolExecutor();
@@ -93,18 +91,7 @@ public class CrawlerController implements Crawler {
         log.info("Crawler finished");
     }
 
-    private void init() {
-        ensureSchedule();
-    }
-
-    private void ensureSchedule() {
-        if (this.schedule == null) {
-            schedule = new UniqueSchedule();
-        }
-    }
-
     public void addSeed(String url) {
-        ensureSchedule();
         this.seeds.add(url);
 
         // add seeds to schedule
