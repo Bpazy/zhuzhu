@@ -135,7 +135,7 @@ public class CrawlersTest {
             try {
                 byteArrayOutputStream.write(o.getBytes());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new BaseTestException(e);
             }
         }
     }

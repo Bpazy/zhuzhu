@@ -22,7 +22,7 @@ public class WebCrawlerFactory implements WebCrawlerInitializr<WebCrawler> {
             return clazz.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             log.error("", e);
-            throw new RuntimeException(e);
+            throw new ZhuzhuException(e);
         }
     }
 }

@@ -54,7 +54,13 @@ public class ThreadPool {
             try {
                 executor.getQueue().put(r);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                throw new BlockingException(e);
+            }
+        }
+
+        static class BlockingException extends RuntimeException {
+            BlockingException(Throwable throwable) {
+                super(throwable);
             }
         }
     }

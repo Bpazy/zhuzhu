@@ -50,7 +50,7 @@ public class WebCrawlerFactoryTest {
             try {
                 byteArrayOutputStream.write(visitData.getBytes());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new BaseTestException(e);
             }
         }
     }
